@@ -3,7 +3,10 @@ ARG webchanges_tag=v3.15
 
 RUN apk add --no-cache \
     binutils \
+    gcc \
     git \
+    libc-dev \
+    libffi-dev \
     upx
 
 # Update pip, setuptools and wheel, install pyinstaller
