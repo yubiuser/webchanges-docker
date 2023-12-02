@@ -1,0 +1,1 @@
+*/15 * * * * date && echo "Running webchanges" && cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --cache cache.db

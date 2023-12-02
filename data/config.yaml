@@ -1,0 +1,120 @@
+# webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
+# Originally written on 2023-12-01T21:46:26Z by version 3.15.
+
+display:
+  new: true
+  error: true
+  unchanged: false
+  empty-diff: true
+report:
+  tz: null
+  text:
+    line_length: 75
+    details: true
+    footer: true
+    minimal: false
+    separate: false
+  html:
+    diff: unified
+    separate: false
+  markdown:
+    details: true
+    footer: true
+    minimal: false
+    separate: false
+  stdout:
+    enabled: true
+    color: true
+  browser:
+    enabled: false
+    title: '[webchanges] {count} changes: {jobs}'
+  discord:
+    enabled: false
+    webhook_url: ''
+    embed: true
+    subject: '{count} changes: {jobs}'
+    colored: true
+    max_message_length: null
+  email:
+    enabled: false
+    html: true
+    from: ''
+    to: ''
+    subject: '[webchanges] {count} changes: {jobs}'
+    method: smtp
+    smtp:
+      host: localhost
+      port: 25
+      starttls: true
+      auth: true
+      user: ''
+      insecure_password: ''
+    sendmail:
+      path: sendmail
+  ifttt:
+    enabled: false
+    key: ''
+    event: ''
+  mailgun:
+    enabled: false
+    region: us
+    api_key: ''
+    domain: ''
+    from_mail: ''
+    from_name: ''
+    to: ''
+    subject: '[webchanges] {count} changes: {jobs}'
+  matrix:
+    enabled: false
+    homeserver: ''
+    access_token: ''
+    room_id: ''
+  prowl:
+    enabled: false
+    api_key: ''
+    priority: 0
+    application: ''
+    subject: '[webchanges] {count} changes: {jobs}'
+  pushbullet:
+    enabled: false
+    api_key: ''
+  pushover:
+    enabled: false
+    app: ''
+    user: ''
+    device: null
+    sound: spacealarm
+    priority: normal
+  run_command:
+    enabled: false
+    command: ''
+  telegram:
+    enabled: false
+    bot_token: ''
+    chat_id: ''
+    silent: false
+  webhook:
+    enabled: false
+    webhook_url: ''
+    markdown: false
+    max_message_length: null
+  xmpp:
+    enabled: false
+    sender: ''
+    recipient: ''
+    insecure_password: ''
+job_defaults:
+  _note: Default directives that are applied to jobs.
+  all:
+    _note: These are used for all type of jobs, including those in hooks.py.
+  url:
+    _note: These are used for 'url' jobs without 'use_browser'.
+  browser:
+    _note: 'These are used for ''url'' jobs with ''use_browser: true''.'
+  command:
+    _note: These are used for 'command' jobs.
+database:
+  engine: sqlite3
+  max_snapshots: 4
+footnote: null
+
