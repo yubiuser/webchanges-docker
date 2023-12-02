@@ -34,7 +34,8 @@ RUN python3 -m pip install \
     cssbeautifier \
     jq \
     chump \
-    pyopenssl
+    pyopenssl \
+    minidb
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
