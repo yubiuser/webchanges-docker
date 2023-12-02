@@ -1,5 +1,6 @@
 FROM python:3.11.3-alpine3.18 as builder
 ARG webchanges_tag=v3.15
+ENV PYTHONUTF8=1
 
 RUN apk add --no-cache \
     binutils \
@@ -55,6 +56,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 FROM alpine:3.18 as deploy
 ENV APP_USER webchanges
+ENV PYTHONUTF8=1
 
 COPY --from=builder /webchanges/dist/webchanges /usr/local/bin/webchanges
 
