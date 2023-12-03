@@ -1,3 +1,20 @@
+# webchanges-docker
+
+This repo provides a small docker image for running [webchanges](https://github.com/mborsetti/webchanges) without installing a whole python ecosystem. The image is rather small (~30 MB) and `alpine`-based.
+
+The following optional dependencies of `webchanges` are included (see [Dependencies](https://webchanges.readthedocs.io/en/stable/dependencies.html#dependencies))
+
+|   | Comment  |
+|---|---|
+| `minidb` | to allow uimporting legacy `urlwatch` databases |
+|  `html5lib` |  parser for the bs4 method of the html2text filter |
+| `beautifulsoup4`  |  `beautify` filter |
+|  `jsbeautifier` | `beautify` filter  |
+|  `cssbeautifier` |  `beautify` filter |
+|  `jq` |   |
+|  `chump` |  for `pushover` reporter |
+|  `pyopenssl` | |
+
 ## Setup
 
 1. add URLs to `data/jobs.yaml` (take a look at the [Jobs section](https://webchanges.readthedocs.io/en/stable/jobs.html) in the *webchanges* documentation for all details)
