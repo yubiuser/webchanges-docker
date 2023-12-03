@@ -1,9 +1,13 @@
 FROM python:3.11.3-alpine3.18 as builder
 ARG webchanges_tag=v3.15
+ENV PYTHONUTF8=1
 
 RUN apk add --no-cache \
     binutils \
+    gcc \
     git \
+    libc-dev \
+    libffi-dev \
     upx
 
 # Update pip, setuptools and wheel, install pyinstaller
@@ -31,7 +35,8 @@ RUN python3 -m pip install \
     cssbeautifier \
     jq \
     chump \
-    pyopenssl
+    pyopenssl \
+    minidb
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
@@ -51,6 +56,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 FROM alpine:3.18 as deploy
 ENV APP_USER webchanges
+ENV PYTHONUTF8=1
 
 COPY --from=builder /webchanges/dist/webchanges /usr/local/bin/webchanges
 
