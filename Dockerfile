@@ -1,5 +1,5 @@
 FROM python:3.11.3-alpine3.18 as builder
-ARG webchanges_tag=v3.15
+ARG webchanges_tag=v3.16
 ENV PYTHONUTF8=1
 
 RUN apk add --no-cache \
