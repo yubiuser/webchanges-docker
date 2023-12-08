@@ -1,5 +1,8 @@
-FROM python:3.11.3-alpine3.18 as builder
+ARG alpine_version=3.19
+ARG python_version=3.12
 ARG webchanges_tag=v3.16
+FROM python:${python_version}-alpine${alpine_version} as builder
+
 ENV PYTHONUTF8=1
 
 RUN apk add --no-cache \
@@ -54,7 +57,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 
 
-FROM alpine:3.18 as deploy
+FROM alpine:${alpine_version} as deploy
 ENV APP_USER webchanges
 ENV PYTHONUTF8=1
 
