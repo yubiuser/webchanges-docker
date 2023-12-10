@@ -1,5 +1,5 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2023-12-01T21:46:26Z by version 3.15.
+# Originally written on 2023-12-10T19:02:42+00:00Z by version 3.17.
 
 display:
   new: true
@@ -9,14 +9,16 @@ display:
 report:
   tz: null
   text:
-    line_length: 75
     details: true
     footer: true
+    line_length: 75
     minimal: false
     separate: false
   html:
     diff: unified
+    footer: true
     separate: false
+    title: '[webchanges] {count} changes{jobs_files}: {jobs}'
   markdown:
     details: true
     footer: true
@@ -27,12 +29,11 @@ report:
     color: true
   browser:
     enabled: false
-    title: '[webchanges] {count} changes: {jobs}'
   discord:
     enabled: false
     webhook_url: ''
     embed: true
-    subject: '{count} changes: {jobs}'
+    subject: '[webchanges] {count} changes{jobs_files}: {jobs}'
     colored: true
     max_message_length: null
   email:
@@ -40,7 +41,7 @@ report:
     html: true
     from: ''
     to: ''
-    subject: '[webchanges] {count} changes: {jobs}'
+    subject: '[webchanges] {count} changes{jobs_files}: {jobs}'
     method: smtp
     smtp:
       host: localhost
@@ -63,7 +64,7 @@ report:
     from_mail: ''
     from_name: ''
     to: ''
-    subject: '[webchanges] {count} changes: {jobs}'
+    subject: '[webchanges] {count} changes{jobs_files}: {jobs}'
   matrix:
     enabled: false
     homeserver: ''
@@ -74,7 +75,7 @@ report:
     api_key: ''
     priority: 0
     application: ''
-    subject: '[webchanges] {count} changes: {jobs}'
+    subject: '[webchanges] {count} changes{jobs_files}: {jobs}'
   pushbullet:
     enabled: false
     api_key: ''
@@ -117,4 +118,3 @@ database:
   engine: sqlite3
   max_snapshots: 4
 footnote: null
-

@@ -1,6 +1,6 @@
 ARG alpine_version=3.19
 ARG python_version=3.12
-ARG webchanges_tag=v3.16
+ARG webchanges_tag=v3.17
 
 FROM python:${python_version}-alpine${alpine_version} as builder
 ARG webchanges_tag
