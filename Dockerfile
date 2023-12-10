@@ -40,7 +40,9 @@ RUN python3 -m pip install \
     jq \
     chump \
     pyopenssl \
-    minidb
+    minidb \
+    requests \ 
+    urllib3 
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
