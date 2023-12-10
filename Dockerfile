@@ -1,6 +1,6 @@
 ARG alpine_version=3.19
 ARG python_version=3.12
-ARG webchanges_tag=v3.17
+ARG webchanges_tag=v3.17.1
 
 FROM python:${python_version}-alpine${alpine_version} as builder
 ARG webchanges_tag
@@ -40,9 +40,7 @@ RUN python3 -m pip install \
     jq \
     chump \
     pyopenssl \
-    minidb \
-    requests \ 
-    urllib3 
+    minidb
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
