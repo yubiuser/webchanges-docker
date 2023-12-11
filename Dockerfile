@@ -61,6 +61,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 FROM alpine:${alpine_version} as deploy
 ENV APP_USER webchanges
 ENV PYTHONUTF8=1
+RUN apk add --no-cache tini
 
 COPY --from=builder /webchanges/dist/webchanges /usr/local/bin/webchanges
 
@@ -78,4 +79,5 @@ RUN rm /var/spool/cron/crontabs/root
 COPY crontabfile ./crontabfile
 COPY run.sh ./run.sh
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/bin/sh", "run.sh"]
