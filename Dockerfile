@@ -12,6 +12,8 @@ RUN apk add --no-cache \
     gcc \
     libc-dev \
     libffi-dev \
+    libxml2-dev \
+    libxslt-dev \
     upx \
     zlib-dev
 
