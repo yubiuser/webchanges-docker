@@ -12,7 +12,8 @@ RUN apk add --no-cache \
     gcc \
     libc-dev \
     libffi-dev \
-    upx
+    upx \
+    zlib-dev
 
 # Update pip, setuptools and wheel, install pyinstaller
 RUN python3 -m pip install --upgrade \
