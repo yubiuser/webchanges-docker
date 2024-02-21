@@ -9,6 +9,7 @@ ENV PYTHONUTF8=1
 
 RUN apk add --no-cache \
     binutils \
+    cargo \
     gcc \
     libc-dev \
     libffi-dev \
