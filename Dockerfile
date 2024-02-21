@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     binutils \
     cargo \
     gcc \
+    g++ \
     libc-dev \
     libffi-dev \
     libxml2-dev \
