@@ -9,17 +9,10 @@ ENV PYTHONUTF8=1
 
 RUN apk add --no-cache \
     binutils \
-    cargo \
     gcc \
-    g++ \
     libc-dev \
     libffi-dev \
-    libxml2-dev \
-    libxslt-dev \
-    openssl-dev \
-    rust \
-    upx \
-    zlib-dev
+    upx
 
 # Update pip, setuptools and wheel, install pyinstaller
 RUN python3 -m pip install --upgrade \
