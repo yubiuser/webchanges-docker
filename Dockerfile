@@ -1,6 +1,7 @@
+# syntax=docker/dockerfile:1
 ARG alpine_version=3.19
 ARG python_version=3.12
-ARG webchanges_tag=v3.17.2
+ARG webchanges_tag=v3.18.1
 
 FROM python:${python_version}-alpine${alpine_version} as builder
 ARG webchanges_tag
@@ -9,7 +10,6 @@ ENV PYTHONUTF8=1
 RUN apk add --no-cache \
     binutils \
     gcc \
-    git \
     libc-dev \
     libffi-dev \
     upx
@@ -22,9 +22,8 @@ RUN python3 -m pip install --upgrade \
     && python3 -m pip install pyinstaller
 
 # Get latest webchanges source, checkout tag
-RUN git clone https://github.com/mborsetti/webchanges.git
+ADD https://github.com/mborsetti/webchanges.git#${webchanges_tag} /webchanges
 WORKDIR /webchanges
-RUN git checkout tags/${webchanges_tag}  -b ${webchanges_tag}
 
 # Install requirements and webchanges from source
 RUN python3 -m pip install -r requirements.txt \
