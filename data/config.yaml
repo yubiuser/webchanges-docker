@@ -1,5 +1,5 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2023-12-10T19:02:42+00:00Z by version 3.17.
+# Originally written on 2024-04-16T18:54:43+00:00Z by version 3.21.
 
 display:
   new: true
@@ -98,6 +98,7 @@ report:
     enabled: false
     webhook_url: ''
     markdown: false
+    rich_text: null
     max_message_length: null
   xmpp:
     enabled: false
