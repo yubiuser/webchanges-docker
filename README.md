@@ -14,6 +14,7 @@ The following optional dependencies of `webchanges` are included (see [Dependenc
 |  `jq` |   |
 |  `chump` |  for `pushover` reporter |
 |  `pyopenssl` | |
+| `python-dateutil` | for `--rollback-database` |
 
 ## Setup
 
