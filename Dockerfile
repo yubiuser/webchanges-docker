@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-ARG alpine_version=3.19
+ARG alpine_version=3.20
 ARG python_version=3.12
-ARG webchanges_tag=v3.22
+ARG webchanges_tag=v3.24.1
 
 FROM python:${python_version}-alpine${alpine_version} as builder
 ARG webchanges_tag
@@ -39,8 +39,8 @@ RUN python3 -m pip install \
     jq \
     chump \
     pyopenssl \
-    minidb
-
+    minidb \
+    python-dateutil
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
 
