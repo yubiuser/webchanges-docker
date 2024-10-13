@@ -6,7 +6,7 @@ The following optional dependencies of `webchanges` are included (see [Dependenc
 
 |   | Comment  |
 |---|---|
-| `minidb` | to allow uimporting legacy `urlwatch` databases |
+| `minidb` | to allow importing legacy `urlwatch` databases |
 |  `html5lib` |  parser for the bs4 method of the html2text filter |
 | `beautifulsoup4`  |  `beautify` filter |
 |  `jsbeautifier` | `beautify` filter  |
@@ -15,6 +15,7 @@ The following optional dependencies of `webchanges` are included (see [Dependenc
 |  `chump` |  for `pushover` reporter |
 |  `pyopenssl` | |
 | `python-dateutil` | for `--rollback-database` |
+| `zstandard` | for Zstandard compression|
 
 ## Setup
 
