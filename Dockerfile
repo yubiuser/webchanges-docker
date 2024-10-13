@@ -41,7 +41,8 @@ RUN python3 -m pip install \
     pyopenssl \
     minidb \
     python-dateutil \
-    zstandard
+    zstandard \
+    vobject
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
