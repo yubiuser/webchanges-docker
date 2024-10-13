@@ -16,6 +16,8 @@ The following optional dependencies of `webchanges` are included (see [Dependenc
 |  `pyopenssl` | |
 | `python-dateutil` | for `--rollback-database` |
 | `zstandard` | for Zstandard compression|
+| `vobject` | for iCal handling |
+
 
 ## Setup
 
