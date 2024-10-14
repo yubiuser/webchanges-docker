@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 ARG alpine_version=3.20
 ARG python_version=3.12
-ARG webchanges_tag=v3.24.1
+ARG webchanges_tag=v3.26.0
 
-FROM python:${python_version}-alpine${alpine_version} as builder
+FROM python:${python_version}-alpine${alpine_version} AS builder
 ARG webchanges_tag
 ENV PYTHONUTF8=1
 
@@ -40,7 +40,10 @@ RUN python3 -m pip install \
     chump \
     pyopenssl \
     minidb \
-    python-dateutil
+    python-dateutil \
+    zstandard \
+    vobject
+
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
 
@@ -57,8 +60,8 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 
 
-FROM alpine:${alpine_version} as deploy
-ENV APP_USER webchanges
+FROM alpine:${alpine_version} AS deploy
+ENV APP_USER=webchanges
 ENV PYTHONUTF8=1
 RUN apk add --no-cache tini
 
