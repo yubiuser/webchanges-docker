@@ -96,6 +96,40 @@ services:
       - webchangess
 ```
 
+## Testing
+
+You can use
+``` shell
+docker compose exec webchanges sh
+cd /data/webchanges
+```
+and then
+``` shell
+webchanges --urls jobs.yaml --config config.yaml --cache cache.db --list
+```
+to get **a list of all configured filters** including the ID of each entry, e.g.,
+``` plain
+List of jobs:
+  1: A news (https://www.a.com/news)
+  2: B changelog (https://www.b.com/changelog)
+  ...
+```
+
+These IDs can then be used to actually test the filters, e.g.,
+``` shell
+webchanges --urls jobs.yaml --config config.yaml --cache cache.db --test 2
+```
+for testing rule 2 (B changelog). This is very helpful for debugging existing filters (e.g., on format changes on a page), and for creating new filters where the particular filtering options are not yet clear.
+
+## Update
+
+To update the container to the latest version, pull the image from the registry and restart the container:
+
+``` shell
+docker-compose pull
+docker-compose up -d
+```
+
 ## Build Locally
 
 - clone repository: `git clone git@github.com:yubiuser/webchanges-docker.git`
