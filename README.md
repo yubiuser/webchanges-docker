@@ -59,19 +59,19 @@ docker logs --follow webchanges
 
 ### Change *cron* interval
 
-*webchanges* runs once every 15 minutes with the provided default settings. It's possible to adjust that interval by editing the provided `crontab` file and mount in into the container.
+*webchanges* runs once every 15 minutes with the provided default settings. It's possible to adjust that interval by editing the provided `crontabfile` file and mount in into the container.
 
-For running every hour instead of the default 15 minutes, change `crontab` as following:
+For running every hour instead of the default 15 minutes, change `crontabfile` as following:
 
 ```crontab
-0 * * * * cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --cache cache.db
+0 * * * * cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --database snapshots.db
 ```
 
 Addtionally, each day at 08:00 `webchanges --error` runs to check the jobs for errors or empty data.
 
 Tip: use [crontabguru](https://crontab.guru/) to change the cron intervals. 
 
-Mount `crontab` into the container:
+Mount `crontabfile` into the container:
 
 ```shell
 docker-compose run --rm --volume "$(pwd)/crontabfile:/crontabfile:ro" --volume "$(pwd):/data" --volume /etc/localtime:/etc/localtime:ro webchanges
@@ -96,6 +96,18 @@ services:
       - webchangess
 ```
 
+### Migrating from `webchanges` pre-v3.22 (April 2024)
+
+If you are migrating from a version of `webchanges` before v3.22, you need to migrate your `crontabfile` to the new format. This can be done by changing all occurrences of
+``` plain
+--cache cache.db
+```
+to
+``` plain
+--database snapshots.db
+```
+in the `crontabfile`.
+
 ## Testing
 
 You can use
@@ -105,7 +117,7 @@ cd /data/webchanges
 ```
 and then
 ``` shell
-webchanges --urls jobs.yaml --config config.yaml --cache cache.db --list
+webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --list
 ```
 to get **a list of all configured filters** including the ID of each entry, e.g.,
 ``` plain
@@ -117,7 +129,7 @@ List of jobs:
 
 These IDs can then be used to actually test the filters, e.g.,
 ``` shell
-webchanges --urls jobs.yaml --config config.yaml --cache cache.db --test 2
+webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --test 2
 ```
 for testing rule 2 (B changelog). This is very helpful for debugging existing filters (e.g., on format changes on a page), and for creating new filters where the particular filtering options are not yet clear.
 
