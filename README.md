@@ -64,12 +64,12 @@ docker logs --follow webchanges
 For running every hour instead of the default 15 minutes, change `crontab` as following:
 
 ```crontab
-0 * * * * cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --cache cache.db
+0 * * * * cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --cache cache.db --clean-database
 ```
 
 Addtionally, each day at 08:00 `webchanges --error` runs to check the jobs for errors or empty data.
 
-Tip: use [crontabguru](https://crontab.guru/) to change the cron intervals. 
+Tip: use [crontabguru](https://crontab.guru/) to change the cron intervals.
 
 Mount `crontab` into the container:
 
