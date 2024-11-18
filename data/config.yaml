@@ -1,11 +1,11 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2024-04-16T18:54:43+00:00Z by version 3.21.
+# Originally written on 2024-11-18T16:34:17+00:00Z by version 3.26.0.
 
 display:
   new: true
   error: true
   unchanged: false
-  empty-diff: true
+  empty-diff: false
 report:
   tz: null
   text:
@@ -52,6 +52,12 @@ report:
       insecure_password: ''
     sendmail:
       path: sendmail
+  gotify:
+    enabled: false
+    priority: 0
+    server_url: ''
+    title: ''
+    token: ''
   ifttt:
     enabled: false
     key: ''
