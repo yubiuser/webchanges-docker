@@ -22,7 +22,7 @@ RUN python3 -m pip install --upgrade \
     && python3 -m pip install pyinstaller
 
 # Get latest webchanges source, checkout tag
-ADD https://github.com/mborsetti/webchanges.git#${webchanges_tag} /webchanges
+ADD https://github.com/mborsetti/webchanges.git#unreleased /webchanges
 WORKDIR /webchanges
 
 # Install requirements and webchanges from source
