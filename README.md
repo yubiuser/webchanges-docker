@@ -1,6 +1,6 @@
 # webchanges-docker
 
-This repo provides a small docker image for running [webchanges](https://github.com/mborsetti/webchanges) without installing a whole python ecosystem. The image is rather small (~30 MB) and `alpine`-based.
+This repo provides a small docker image for running [webchanges](https://github.com/mborsetti/webchanges) without installing a whole python ecosystem. The image is rather small (~35 MB) and `alpine`-based.
 
 The following optional dependencies of `webchanges` are included (see [Dependencies](https://webchanges.readthedocs.io/en/stable/dependencies.html#dependencies))
 
@@ -17,7 +17,6 @@ The following optional dependencies of `webchanges` are included (see [Dependenc
 | `python-dateutil` | for `--rollback-database` |
 | `zstandard` | for Zstandard compression|
 | `vobject` | for iCal handling |
-
 
 ## Setup
 
@@ -69,7 +68,7 @@ For running every hour instead of the default 15 minutes, change `crontabfile` a
 
 Addtionally, each day at 08:00 `webchanges --error` runs to check the jobs for errors or empty data.
 
-Tip: use [crontabguru](https://crontab.guru/) to change the cron intervals. 
+Tip: use [crontabguru](https://crontab.guru/) to change the cron intervals.
 
 Mount `crontabfile` into the container:
 
@@ -99,27 +98,36 @@ services:
 ### Migrating from `webchanges` pre-v3.22 (April 2024)
 
 If you are migrating from a version of `webchanges` before v3.22, you need to migrate your `crontabfile` to the new format. This can be done by changing all occurrences of
+
 ``` plain
 --cache cache.db
 ```
+
 to
+
 ``` plain
 --database snapshots.db
 ```
+
 in the `crontabfile`.
 
 ## Testing
 
 You can use
+
 ``` shell
 docker compose exec webchanges sh
 cd /data/webchanges
 ```
+
 and then
+
 ``` shell
-webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --list
+su -c 'webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --list' webchanges
 ```
+
 to get **a list of all configured filters** including the ID of each entry, e.g.,
+
 ``` plain
 List of jobs:
   1: A news (https://www.a.com/news)
@@ -128,9 +136,11 @@ List of jobs:
 ```
 
 These IDs can then be used to actually test the filters, e.g.,
+
 ``` shell
-webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --test 2
+su-c 'webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --test 2' webchanges
 ```
+
 for testing rule 2 (B changelog). This is very helpful for debugging existing filters (e.g., on format changes on a page), and for creating new filters where the particular filtering options are not yet clear.
 
 ## Update
