@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-ARG alpine_version=3.20
-ARG python_version=3.12
-ARG webchanges_tag=v3.26.0
+ARG alpine_version=3.21
+ARG python_version=3.13
+ARG webchanges_tag=v3.27.0
 
 FROM python:${python_version}-alpine${alpine_version} AS builder
 ARG webchanges_tag
