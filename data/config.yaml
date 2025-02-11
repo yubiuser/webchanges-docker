@@ -1,5 +1,6 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2025-02-03T20:17:28+00:00Z by version 3.27.0.
+# Originally written on 2025-02-11T19:36:36+00:00Z by version 3.28.0rc0.
+
 display:
   new: true
   error: true
@@ -120,6 +121,15 @@ job_defaults:
     _note: 'These are used for ''url'' jobs with ''use_browser: true''.'
   command:
     _note: These are used for 'command' jobs.
+differ_defaults:
+  _note: Default directives that are applied to individual differs.
+  unified: {}
+  ai_google: {}
+  command: {}
+  deepdiff: {}
+  image: {}
+  table: {}
+  wdiff: {}
 database:
   engine: sqlite3
   max_snapshots: 4
