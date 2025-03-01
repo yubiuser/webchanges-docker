@@ -63,7 +63,7 @@ docker logs --follow webchanges
 For running every hour instead of the default 15 minutes, change `crontabfile` as following:
 
 ```crontab
-0 * * * * cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --database snapshots.db
+0 * * * * cd /data/webchanges && webchanges --jobs jobs.yaml --config config.yaml --database snapshots.db
 ```
 
 Addtionally, each day at 08:00 `webchanges --error` runs to check the jobs for errors or empty data.
@@ -123,7 +123,7 @@ cd /data/webchanges
 and then
 
 ``` shell
-su -c 'webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --list' webchanges
+su -c 'webchanges --jobs jobs.yaml --config config.yaml --database snapshots.db --list' webchanges
 ```
 
 to get **a list of all configured filters** including the ID of each entry, e.g.,
@@ -138,10 +138,22 @@ List of jobs:
 These IDs can then be used to actually test the filters, e.g.,
 
 ``` shell
-su-c 'webchanges --urls jobs.yaml --config config.yaml --database snapshots.db --test 2' webchanges
+su -c 'webchanges --jobs jobs.yaml --config config.yaml --database snapshots.db --test 2' webchanges
 ```
 
 for testing rule 2 (B changelog). This is very helpful for debugging existing filters (e.g., on format changes on a page), and for creating new filters where the particular filtering options are not yet clear.
+Combine `--test` with `--verbose` to get more information. The output of the test can be redirected to any reporter by combining it with --test-reporter.
+
+``` shell
+su -c 'webchanges --verbose --jobs jobs.yaml --config config.yaml --database snapshots.db --test 2 --test-reporter email' webchanges
+```
+
+For in-depth debugging, log-output can be send to a file in combination with `-v` or `-vv`
+
+``` shell
+su -c 'webchanges --verbose --errors --jobs jobs.yaml --config config.yaml --database snapshots.db --log-file error.log' webchanges
+```
+
 
 ## Update
 
