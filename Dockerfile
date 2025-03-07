@@ -3,8 +3,9 @@ ARG alpine_version=3.20
 ARG python_version=3.12
 ARG webchanges_tag=v3.26.0
 
-FROM python:${python_version}-alpine${alpine_version} AS builder
+FROM python:${python_version}-alpine${alpine_version} AS deploy
 ARG webchanges_tag
+ENV APP_USER=webchanges
 ENV PYTHONUTF8=1
 
 RUN apk add --no-cache \
@@ -12,7 +13,9 @@ RUN apk add --no-cache \
     gcc \
     libc-dev \
     libffi-dev \
-    upx
+    upx \
+    tini
+
 
 # Update pip, setuptools and wheel, install pyinstaller
 RUN python3 -m pip install --upgrade \
@@ -60,12 +63,11 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 
 
-FROM alpine:${alpine_version} AS deploy
-ENV APP_USER=webchanges
-ENV PYTHONUTF8=1
-RUN apk add --no-cache tini
+#FROM alpine:${alpine_version} AS deploy
+#ENV APP_USER=webchanges
+#ENV PYTHONUTF8=1
 
-COPY --from=builder /webchanges/dist/webchanges /usr/local/bin/webchanges
+COPY /webchanges/dist/webchanges /usr/local/bin/webchanges
 
 RUN addgroup $APP_USER
 RUN adduser --disabled-password --ingroup $APP_USER $APP_USER
