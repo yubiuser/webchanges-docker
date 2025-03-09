@@ -3,7 +3,7 @@ networks:
 
 services:
   webchanges:
-    image: ghcr.io/yubiuser/webchanges:latest
+    image: ghcr.io/jhedlund/webchanges:latest
     container_name: webchanges
     volumes:
       - ./crontabfile:/crontabfile:ro

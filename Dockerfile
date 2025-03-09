@@ -1,21 +1,18 @@
 # syntax=docker/dockerfile:1
-ARG alpine_version=3.20
 ARG python_version=3.12
-ARG webchanges_tag=v3.26.0
+ARG webchanges_tag=v3.28.1
 
-FROM python:${python_version}-alpine${alpine_version} AS deploy
+FROM python:${python_version}-slim-bookworm AS deploy
 ARG webchanges_tag
 ENV APP_USER=webchanges
 ENV PYTHONUTF8=1
 
-RUN apk add --no-cache \
-    binutils \
-    gcc \
-    libc-dev \
-    libffi-dev \
-    upx \
-    tini
-
+RUN apt-get update; \
+    apt-get install -y \
+            binutils \
+	    rsyslog \
+	    cron \
+            tini
 
 # Update pip, setuptools and wheel, install pyinstaller
 RUN python3 -m pip install --upgrade \
@@ -45,7 +42,10 @@ RUN python3 -m pip install \
     minidb \
     python-dateutil \
     zstandard \
-    vobject
+    vobject \
+    webchanges[use_browser]
+
+RUN playwright install chrome
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
@@ -61,13 +61,9 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 # Debug: list warnings
 # RUN cat build/cli/warn-cli.txt
 
+RUN mv /webchanges/dist/webchanges /usr/local/bin/webchanges
 
-
-#FROM alpine:${alpine_version} AS deploy
-#ENV APP_USER=webchanges
-#ENV PYTHONUTF8=1
-
-COPY /webchanges/dist/webchanges /usr/local/bin/webchanges
+WORKDIR /
 
 RUN addgroup $APP_USER
 RUN adduser --disabled-password --ingroup $APP_USER $APP_USER
@@ -78,10 +74,8 @@ RUN mkdir -p /data/webchanges \
 
 VOLUME /data/webchanges
 
-RUN rm /var/spool/cron/crontabs/root
-
 COPY crontabfile ./crontabfile
 COPY run.sh ./run.sh
 
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["/bin/sh", "run.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/bin/bash", "run.sh"]

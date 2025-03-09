@@ -1,6 +1,8 @@
 # webchanges-docker
 
-This repo provides a small docker image for running [webchanges](https://github.com/mborsetti/webchanges) without installing a whole python ecosystem. The image is rather small (~35 MB) and `alpine`-based.
+This is a fork of https://github.com/yubiuser/webchanges-docker/ to allow for the use of use_browser which requires a larger docker image to support running chrome.
+
+This repo provides a docker image based on Debian for running [webchanges](https://github.com/mborsetti/webchanges). The full python eco system is installed and avaliable for use with hooks, differ commands, etc.
 
 The following optional dependencies of `webchanges` are included (see [Dependencies](https://webchanges.readthedocs.io/en/stable/dependencies.html#dependencies))
 
@@ -17,6 +19,7 @@ The following optional dependencies of `webchanges` are included (see [Dependenc
 | `python-dateutil` | for `--rollback-database` |
 | `zstandard` | for Zstandard compression|
 | `vobject` | for iCal handling |
+| `webchanges[use_browser]` | for use of chrome |
 
 ## Setup
 
@@ -43,14 +46,14 @@ If you don't want to use *Docker Compose*, you can run the container with *Docke
 docker run --rm --interactive --tty \
     --volume "$(pwd)/data":/data/webchanges \
     --volume /etc/localtime:/etc/localtime:ro \
-    ghcr.io/yubiuser/webchanges
+    ghcr.io/jhedlund/webchanges
 
 # run in background and restart automatically
 docker run --tty --detach --restart unless-stopped \
     --name webchanges \
     --volume "$(pwd)/data":/data/webchanges \
     --volume /etc/localtime:/etc/localtime:ro \
-    ghcr.io/yubiuser/webchanges
+    ghcr.io/jhedlund/webchanges
 
 # watch log output
 docker logs --follow webchanges
@@ -60,10 +63,12 @@ docker logs --follow webchanges
 
 *webchanges* runs once every 15 minutes with the provided default settings. It's possible to adjust that interval by editing the provided `crontabfile` file and mount in into the container.
 
+crontabfile commands redirect all output to rsyslogd.
+
 For running every hour instead of the default 15 minutes, change `crontabfile` as following:
 
 ```crontab
-0 * * * * cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --database snapshots.db
+0 * * * * cd /data/webchanges && webchanges --urls jobs.yaml --config config.yaml --database snapshots.db 2>&1 | /usr/bin/logger -t webchanges
 ```
 
 Addtionally, each day at 08:00 `webchanges --error` runs to check the jobs for errors or empty data.
@@ -84,7 +89,7 @@ networks:
 
 services:
   webchanges:
-    image: ghcr.io/yubiuser/webchanges:latest
+    image: ghcr.io/jhedlund/webchanges:latest
     container_name: webchanges
     volumes:
       - ./crontabfile:/crontabfile:ro
@@ -116,7 +121,7 @@ in the `crontabfile`.
 You can use
 
 ``` shell
-docker compose exec webchanges sh
+docker compose exec webchanges /bin/bash
 cd /data/webchanges
 ```
 
@@ -154,6 +159,6 @@ docker-compose up -d
 
 ## Build Locally
 
-- clone repository: `git clone git@github.com:yubiuser/webchanges-docker.git`
+- clone repository: `git clone git@github.com:jhedlund/webchanges-docker.git`
 - adjust interval in crontab if needed (webchanges is started every 15 minutes with the provided default)
 - build the image and run *webchanges*
