@@ -1,5 +1,5 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2025-02-11T19:36:36+00:00Z by version 3.28.0rc0.
+# Originally written on 2025-05-10T19:27:40+00:00Z by version 3.30.0.
 
 display:
   new: true
