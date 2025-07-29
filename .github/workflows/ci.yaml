@@ -26,6 +26,15 @@ jobs:
             runner: ubuntu-latest
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
+          - platform: linux/386
+            runner: ubuntu-latest
+          - platform: linux/arm/v6
+            runner: ubuntu-24.04-arm
+          - platform: linux/arm/v7
+            bin_name: pihole-FTL-armv7
+            runner: ubuntu-24.04-arm
+          - platform: linux/riscv64
+            runner: ubuntu-24.04-arm
     steps:
 
       - name: Prepare name for digest up/download

@@ -9,8 +9,13 @@ RUN apk add --no-cache \
     binutils \
     gcc \
     libc-dev \
-    libffi-dev \
-    upx
+    libffi-dev
+
+# Dependencies i386, armv6, armv7
+RUN apk add --no-cache \
+    libxml2-dev \
+    libxslt-dev \    
+    zlib-dev
 
 # Update pip, setuptools and wheel, install pyinstaller
 RUN python3 -m pip install --upgrade \
