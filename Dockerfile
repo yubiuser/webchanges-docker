@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG webchanges_tag=v3.30.0
+ARG webchanges_tag=unreleased
 
 FROM python:3.13-alpine3.22 AS builder
 ARG webchanges_tag
@@ -19,8 +19,9 @@ RUN python3 -m pip install --upgrade \
     wheel \
     && python3 -m pip install pyinstaller
 
-# Get latest webchanges source, checkout tag
-ADD https://github.com/mborsetti/webchanges.git#${webchanges_tag} /webchanges
+# Install git and clone specific tag
+RUN apk add --no-cache git
+RUN git clone --branch ${webchanges_tag} --depth 1 https://github.com/mborsetti/webchanges.git /webchanges
 WORKDIR /webchanges
 
 # Install requirements and webchanges from source
