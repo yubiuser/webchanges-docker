@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG webchanges_tag=v3.30.0
+ARG webchanges_tag=v3.31.0
 
 FROM python:3.13-alpine3.22 AS builder
 ARG webchanges_tag
