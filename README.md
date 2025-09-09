@@ -18,6 +18,14 @@ The following optional dependencies of `webchanges` are included (see [Dependenc
 | `zstandard` | for Zstandard compression|
 | `vobject` | for iCal handling |
 
+## Versioning
+
+Starting from `webchanges` version `3.33.0` the versioning of this image has changed!
+
+Version is now in sync with the underlying `webchanges` version (e.g. `3.33.0`). If there is any release which only affects the 'wrapper' around `webchanges`, it will be amend with a 'revsion tag' (e.g. `3.33.0-r1`).
+
+Change in the versioning style caused the jump from `1.4.0` to `3.33.0`
+
 ## Setup
 
 1. add URLs to `data/jobs.yaml` (take a look at the [Jobs section](https://webchanges.readthedocs.io/en/stable/jobs.html) in the *webchanges* documentation for all details)
@@ -153,7 +161,6 @@ For in-depth debugging, log-output can be send to a file in combination with `-v
 ``` shell
 su -c 'webchanges --verbose --errors --jobs jobs.yaml --config config.yaml --database snapshots.db --log-file error.log' webchanges
 ```
-
 
 ## Update
 
