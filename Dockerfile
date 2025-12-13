@@ -10,7 +10,10 @@ RUN apk add --no-cache \
     gcc \
     libc-dev \
     libffi-dev \
-    make # needed to build wheel for 'jq' on python 3.14 - might be removed in future versions
+    libxslt-dev \
+    libxml2-dev \
+    make \
+    zlib-dev
     #upx UPX is disabled on non-Windows due to known compatibility problems by PyInstaller
     
 
