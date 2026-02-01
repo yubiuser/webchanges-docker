@@ -1,5 +1,5 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2025-05-10T19:27:40+00:00Z by version 3.30.0.
+# Originally written on 2026-01-31T15:24:05+00:00Z by version 3.33.0.
 
 display:
   new: true
@@ -45,13 +45,26 @@ report:
     method: smtp
     smtp:
       host: localhost
-      port: 25
+      port: 587
       starttls: true
       auth: true
       user: ''
       insecure_password: ''
+      utf-8: true
     sendmail:
       path: sendmail
+  github_issue:
+    enabled: false
+    token: ''
+    owner: ''
+    repo: ''
+    title: ''
+    labels: []
+    format_dt: ''
+    format_content: ''
+    assignees: []
+    type: ''
+    milestone: ''
   gotify:
     enabled: false
     priority: 0
