@@ -46,6 +46,8 @@ jobs:
         type=ref,event=pr
         type=ref,event=branch
       platforms: linux/amd64,linux/arm64
+      # FIXME: GHCR does not support the referrers API and spams the registry with sha-tagged images when cosigned: https://github.com/docker/github-builder/issues/109
+      sign: false
     secrets:
       registry-auths: |
         - registry: ghcr.io
