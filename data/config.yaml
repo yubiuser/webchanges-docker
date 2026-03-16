@@ -1,5 +1,5 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2026-01-31T15:24:05+00:00Z by version 3.33.0.
+# Originally written by version 3.34.1.
 
 display:
   new: true
@@ -50,7 +50,7 @@ report:
       auth: true
       user: ''
       insecure_password: ''
-      utf-8: true
+      utf_8: true
     sendmail:
       path: sendmail
   github_issue:
@@ -89,6 +89,15 @@ report:
     homeserver: ''
     access_token: ''
     room_id: ''
+  ntfy:
+    enabled: false
+    topic_url: ''
+    authorization: null
+    priorities:
+      default: default
+      new: low
+      changed: max
+      error: high
   prowl:
     enabled: false
     api_key: ''
