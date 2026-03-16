@@ -60,7 +60,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 
 
-FROM alpine:3.23 AS deploy
+FROM alpine:3.23.3@sha256:a76a5883dc20c193bd6eb522e940c5d3979ab4af8011d5972a928fb7156fcb9e AS deploy
 ENV APP_USER=webchanges
 ENV PYTHONUTF8=1
 RUN apk add --no-cache tini
