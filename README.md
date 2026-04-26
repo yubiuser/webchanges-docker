@@ -4,20 +4,20 @@ This repo provides a small docker image for running [webchanges](https://github.
 
 The following optional dependencies of `webchanges` are included (see [Dependencies](https://webchanges.readthedocs.io/en/stable/dependencies.html#dependencies))
 
-|   | Comment  |
-|---|---|
-| `beautifulsoup4`  |  `beautify` filter |
-|  `chump` |  for `pushover` reporter |
-|  `cssbeautifier` |  `beautify` filter |
+| | Comment |
+| --- | --- |
+| `beautifulsoup4` | `beautify` filter |
+| `chump` | for `pushover` reporter |
+| `cssbeautifier` | `beautify` filter |
 | `curl_cffi` | to allow curl_cffi backend |
-|  `html5lib` |  parser for the bs4 method of the html2text filter |
-|  `jq` |   |
-|  `jsbeautifier` | `beautify` filter  |
+| `html5lib` | parser for the bs4 method of the html2text filter |
+| `jq` | |
+| `jsbeautifier` | `beautify` filter |
 | `minidb` | to allow importing legacy `urlwatch` databases |
-|  `pyopenssl` | |
+| `pyopenssl` | |
 | `python-dateutil` | for `--rollback-database` |
 | `vobject` | for iCal handling |
-| `zstandard` | for Zstandard compression|
+| `zstandard` | for Zstandard compression |
 
 ## Versioning
 
