@@ -38,6 +38,7 @@ jobs:
       output: image
       cache: true
       cache-scope: build
+      fail-fast: true
       push: ${{ github.actor != 'dependabot[bot]' && ( github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push' || github.event_name == 'release' ) }}
       meta-images: ${{ needs.build-prepare.outputs.REGISTRY_IMAGE }}
       meta-tags: |
