@@ -1,6 +1,7 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written by version 3.34.1.
+# Originally written on 2026-04-26T12:44:12+00:00Z by version 3.36.0.
 
+# yaml-language-server: $schema=config.schema.json
 display:
   new: true
   error: true
@@ -126,7 +127,7 @@ report:
     enabled: false
     webhook_url: ''
     markdown: false
-    rich_text: null
+    rich_text: false
     max_message_length: null
   xmpp:
     enabled: false

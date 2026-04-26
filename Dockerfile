@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG webchanges_tag=v3.34.2
+ARG webchanges_tag=v3.36.0
 
 FROM python:3.14.3-alpine3.22 AS builder
 ARG webchanges_tag
@@ -32,17 +32,18 @@ RUN python3 -m pip install -r requirements.txt \
 # Install some additional packages used by webchanges (optional)
 # see https://webchanges.readthedocs.io/en/stable/dependencies.html
 RUN python3 -m pip install \
-    html5lib \
     beautifulsoup4 \
-    jsbeautifier \
-    cssbeautifier \
-    jq \
     chump \
-    pyopenssl \
+    cssbeautifier \
+    curl_cffi \
+    html5lib \
+    jq \
+    jsbeautifier \
     minidb \
+    pyopenssl \
     python-dateutil \
-    zstandard \
-    vobject
+    vobject \
+    zstandard
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
