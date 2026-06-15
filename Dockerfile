@@ -8,11 +8,12 @@ ENV PYTHONUTF8=1
 RUN apk add --no-cache \
     binutils \
     gcc \
+    git \
     libc-dev \
     libffi-dev \
     libxml2-dev \
     libxslt-dev \
-    make # needed to build wheel for 'jq' on python 3.14 - might be removed in future versions
+    make
     #upx UPX is disabled on non-Windows due to known compatibility problems by PyInstaller
     
 
@@ -22,6 +23,9 @@ RUN python3 -m pip install --upgrade \
     setuptools \
     wheel \
     && python3 -m pip install pyinstaller
+
+# Install argparse-manpage from git, as currentl version 4.7 does not fix issues building on python 3.15 
+RUN python3 -m pip install git+https://github.com/praiskup/argparse-manpage@main
 
 # Get latest webchanges source, checkout tag
 ADD https://github.com/mborsetti/webchanges.git#${webchanges_tag} /webchanges
