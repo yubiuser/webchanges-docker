@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 version=$(webchanges --version | head -n 1)
-date && echo "$version started"
+echo "$version started at $(date)"
 
 # install crontabfile for the user
 crontab -u "$APP_USER" ./crontabfile
