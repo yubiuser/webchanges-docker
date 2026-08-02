@@ -1,5 +1,5 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2026-04-26T12:44:12+00:00Z by version 3.36.0.
+# Originally written on 2026-08-02T18:51:58+00:00Z by version 3.37.0.
 
 # yaml-language-server: $schema=config.schema.json
 display:
@@ -157,3 +157,5 @@ database:
   engine: sqlite3
   max_snapshots: 4
 footnote: null
+version_check:
+  enabled: true
