@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-ARG webchanges_tag=v3.34.1
+ARG webchanges_tag=v3.37.0
 
-FROM python:3.14.1-alpine3.22 AS builder
+FROM python:3.14.6-alpine3.24 AS builder
 ARG webchanges_tag
 ENV PYTHONUTF8=1
 
@@ -32,17 +32,18 @@ RUN python3 -m pip install -r requirements.txt \
 # Install some additional packages used by webchanges (optional)
 # see https://webchanges.readthedocs.io/en/stable/dependencies.html
 RUN python3 -m pip install \
-    html5lib \
     beautifulsoup4 \
-    jsbeautifier \
-    cssbeautifier \
-    jq \
     chump \
-    pyopenssl \
+    cssbeautifier \
+    curl_cffi \
+    html5lib \
+    jq \
+    jsbeautifier \
     minidb \
+    pyopenssl \
     python-dateutil \
-    zstandard \
-    vobject
+    vobject \
+    zstandard
 
 # Copy entrypoint script
 COPY webchanges.py webchanges.py
@@ -60,7 +61,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 
 
-FROM alpine:3.23 AS deploy
+FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS deploy
 ENV APP_USER=webchanges
 ENV PYTHONUTF8=1
 RUN apk add --no-cache tini
