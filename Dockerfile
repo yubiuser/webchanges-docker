@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG webchanges_tag=v3.37.0
 
-FROM python:3.14.6-alpine3.24 AS builder
+FROM python:3.15.0b4-alpine3.24 AS builder
 ARG webchanges_tag
 ENV PYTHONUTF8=1
 
@@ -10,6 +10,8 @@ RUN apk add --no-cache \
     gcc \
     libc-dev \
     libffi-dev \
+    libxml2-dev \
+    libxslt-dev \
     make # needed to build wheel for 'jq' on python 3.14 - might be removed in future versions
     #upx UPX is disabled on non-Windows due to known compatibility problems by PyInstaller
     
