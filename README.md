@@ -101,7 +101,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     restart: "unless-stopped"
     networks:
-      - webchangess
+      - webchanges
 ```
 
 ### Migrating from `webchanges` pre-v3.22 (April 2024)

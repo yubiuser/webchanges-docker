@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG webchanges_tag=v3.37.0
+ARG webchanges_tag=v3.38.0
 
 FROM python:3.15.0-alpine3.24 AS builder
 ARG webchanges_tag
@@ -26,7 +26,7 @@ ADD https://github.com/mborsetti/webchanges.git#${webchanges_tag} /webchanges
 WORKDIR /webchanges
 
 # Install requirements and webchanges from source
-RUN python3 -m pip install -r requirements.txt \
+RUN python3 -m pip install -r requirements_free-threaded.txt \
     && python3 -m pip install .
 
 # Install some additional packages used by webchanges (optional)
