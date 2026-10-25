@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-ARG webchanges_tag=v3.37.0
+ARG webchanges_tag=v3.38.0
 
-FROM python:3.14.6-alpine3.24 AS builder
+FROM python:3.15.0-alpine3.24 AS builder
 ARG webchanges_tag
 ENV PYTHONUTF8=1
 
@@ -26,7 +26,7 @@ ADD https://github.com/mborsetti/webchanges.git#${webchanges_tag} /webchanges
 WORKDIR /webchanges
 
 # Install requirements and webchanges from source
-RUN python3 -m pip install -r requirements.txt \
+RUN python3 -m pip install -r requirements_free-threaded.txt \
     && python3 -m pip install .
 
 # Install some additional packages used by webchanges (optional)
@@ -61,7 +61,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 
 
-FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS deploy
+FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS deploy
 ENV APP_USER=webchanges
 ENV PYTHONUTF8=1
 RUN apk add --no-cache tini

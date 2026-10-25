@@ -1,7 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mborsetti/webchanges/refs/heads/main/webchanges/_resources/jobs.schema.json",
   "title": "Webchanges Jobs Configuration",
-  "description": "JSON Schema for each job in Webchanges' jobs.yaml configuration file",
+  "description": "JSON Schema for each job in webchanges' jobs.yaml configuration file",
   "type": "object",
   "oneOf": [{ "required": ["url"] }, { "required": ["command"] }],
   "properties": {
@@ -26,6 +27,10 @@
       "type": "string",
       "description": "The URL or text to display in reports instead of the actual checked URL."
     },
+    "tags": {
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+      "description": "One tag, or a list of tags, used to select the job with the --tags command line argument and/or the 'tags' directive of a reporter."
+    },
     "kind": {
       "type": "string",
       "pattern": "^(url|browser|command|hooks_.+)$",
@@ -45,10 +50,16 @@
       "type": "boolean",
       "description": "If true, sends data as JSON and sets Content-Type to application/json."
     },
+    "json": {
+      "type": "boolean",
+      "description": "Deprecated: use 'data_as_json' instead.",
+      "deprecated": true,
+      "deprecationMessage": "Use 'data_as_json' instead of 'json'."
+    },
     "headers": {
       "type": "object",
-      "additionalProperties": { "type": "string" },
-      "description": "Custom HTTP headers."
+      "additionalProperties": { "type": ["string", "null"] },
+      "description": "Custom HTTP headers, merged header by header with the defaults set in the configuration's job_defaults; a header set to null is not sent, even if set in job_defaults."
     },
     "encoding": {
       "type": "string",
@@ -58,9 +69,18 @@
       "type": ["integer", "number"],
       "description": "Request timeout in seconds."
     },
+    "same_site_delay": {
+      "type": ["integer", "number"],
+      "description": "Number of seconds to wait before retrieving the URL when an earlier job in the list already targets the same site (network location). The first (or only) job for a given site is never delayed. Use it to stagger jobs that would otherwise hit the same site at the same instant and get rate-limited or blocked."
+    },
     "ignore_connection_errors": {
       "type": "boolean",
       "description": "If true, connection errors are ignored (no report sent)."
+    },
+    "empty_as_error": {
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["ignore"] }],
+      "description": "If true, an empty (or whitespace-only) response or command output, or one from which the filters leave nothing, is treated as an error (HTTP status code 999) instead of as valid content, preserving the last non-empty snapshot. Works in all job types; with use_browser, an empty response means the server returned an empty document (the rendered page is never empty). Combine with max_tries to be notified only of persistent empty data. If 'ignore', the error is never reported: the last non-empty snapshot is silently kept.",
+      "default": false
     },
     "no_redirects": {
       "type": "boolean",
@@ -73,12 +93,14 @@
     },
     "retries": {
       "type": "integer",
-      "description": "Number of retries for failed requests."
+      "minimum": 0,
+      "description": "Number of times to retry a request that fails with a connection error (e.g. a connection reset), a timeout, or HTTP status code 429, 500, 502, 503 or 504, before reporting the error. Waits the time requested by the server's Retry-After header (up to 60 seconds) or else 1, 2, 4... seconds (up to 30) between attempts. url jobs without use_browser only.",
+      "default": 0
     },
     "cookies": {
       "type": "object",
-      "additionalProperties": { "type": "string" },
-      "description": "Cookies to send with the request."
+      "additionalProperties": { "type": ["string", "null"] },
+      "description": "Cookies to send with the request, merged cookie by cookie with the defaults set in the configuration's job_defaults; a cookie set to null is not sent, even if set in job_defaults."
     },
     "ignore_cached": {
       "type": "boolean",
@@ -124,9 +146,27 @@
       "description": "Browser TLS fingerprint to impersonate when http_client is curl_cffi (e.g. 'chrome', 'chrome124', 'safari17_0', 'firefox133'). Defaults to 'chrome'. Ignored by other HTTP clients.",
       "default": "chrome"
     },
+    "http_version": {
+      "type": "string",
+      "enum": ["v1", "v2", "v2tls", "v2_prior_knowledge", "v3", "v3only"],
+      "description": "HTTP protocol version: v1 (HTTP/1.1), v2 (HTTP/2; with httpx requires the h2 package), and, with http_client: curl_cffi only, v2tls, v2_prior_knowledge, v3 (HTTP/3 with fallback) and v3only. Not supported by http_client: requests."
+    },
+    "fingerprints": {
+      "type": "object",
+      "properties": {
+        "ja3": { "type": "string", "description": "JA3 TLS fingerprint string." },
+        "akamai": { "type": "string", "description": "Akamai HTTP/2 fingerprint string." },
+        "extra_fp": {
+          "type": "object",
+          "description": "Additional fingerprint overrides (e.g. tls_min_version, tls_grease, http2_stream_weight)."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Low-level TLS/HTTP fingerprint overrides for http_client: curl_cffi (ignored, with a warning, by other HTTP clients)."
+    },
     "ignore_dh_key_too_small": {
       "type": "boolean",
-      "description": "If true, works around weak DH key errors.",
+      "description": "If true, accepts a server's weak (1024-bit) Diffie-Hellman key by lowering the OpenSSL security level (certificates are still verified). Supported by http_client httpx and requests, not by curl_cffi.",
       "default": false
     },
     "params": {
@@ -142,6 +182,18 @@
     "proxy": {
       "type": "string",
       "description": "Proxy URL to use for the request."
+    },
+    "http_proxy": {
+      "type": "string",
+      "description": "Deprecated: use 'proxy' instead.",
+      "deprecated": true,
+      "deprecationMessage": "Use 'proxy' instead of 'http_proxy'."
+    },
+    "https_proxy": {
+      "type": "string",
+      "description": "Deprecated: use 'proxy' instead.",
+      "deprecated": true,
+      "deprecationMessage": "Use 'proxy' instead of 'https_proxy'."
     },
     "use_browser": {
       "oneOf": [{ "type": "boolean" }, { "type": "string", "pattern": "^(chrome|msedge|firefox$|webkit$)" }],
@@ -170,6 +222,11 @@
       },
       "description": "Resource types to block from loading (browser jobs)."
     },
+    "connect_over_cdp": {
+      "oneOf": [{ "type": "boolean" }, { "type": "string", "format": "uri" }],
+      "description": "Attach Playwright to an already-running Chromium browser via the Chrome DevTools Protocol (browser jobs). 'true' uses the default endpoint ws://127.0.0.1:58489/devtools/browser; a string is used as the CDP WebSocket URL.",
+      "default": false
+    },
     "evaluate": {
       "type": "string",
       "description": "JavaScript code to execute in the page context (browser jobs)."
@@ -180,7 +237,7 @@
     },
     "ignore_default_args": {
       "oneOf": [{ "type": "boolean" }, { "type": "array", "items": { "type": "string" } }],
-      "description": "Override Chrome default arguments (browser jobs).",
+      "description": "Override browser default arguments (browser jobs).",
       "default": false
     },
     "ignore_https_errors": {
@@ -207,11 +264,11 @@
     "switches": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Additional Chrome command-line switches (browser jobs)."
+      "description": "Additional browser command-line switches (browser jobs)."
     },
     "user_data_dir": {
       "type": "string",
-      "description": "Path to a Chrome user data directory (for persistence/auth with use_browser)."
+      "description": "Path to a browser user data directory (for persistence/auth with use_browser)."
     },
     "wait_for_function": {
       "oneOf": [
@@ -299,6 +356,35 @@
       "description": "Deprecated: use 'diff_filters' instead.",
       "deprecated": true,
       "deprecationMessage": "Use 'diff_filters' instead of 'diff_filter'."
+    },
+    "diff_tool": {
+      "type": "string",
+      "description": "Deprecated: use 'differ' with name 'command' instead.",
+      "deprecated": true,
+      "deprecationMessage": "Use 'differ: {name: command, command: ...}' instead of 'diff_tool'."
+    },
+    "navigate": {
+      "type": "string",
+      "description": "Deprecated: use 'url' with 'use_browser: true' instead.",
+      "deprecated": true,
+      "deprecationMessage": "Use 'url' with 'use_browser: true' instead of 'navigate'."
+    },
+    "wait_for": {
+      "type": ["integer", "string"],
+      "description": "No longer supported (Pyppeteer): use 'wait_for_function', 'wait_for_selector' or 'wait_for_timeout' instead.",
+      "deprecated": true,
+      "deprecationMessage": "Use 'wait_for_function', 'wait_for_selector' or 'wait_for_timeout' instead of 'wait_for'."
+    },
+    "wait_for_navigation": {
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+      "description": "Deprecated (Pyppeteer): use 'wait_for_url' instead.",
+      "deprecated": true,
+      "deprecationMessage": "Use 'wait_for_url' instead of 'wait_for_navigation'."
+    },
+    "stderr": {
+      "type": "string",
+      "description": "Ignored; accepted for compatibility with urlwatch (command jobs).",
+      "deprecated": true
     },
     "differ": {
       "oneOf": [
@@ -444,6 +530,27 @@
                   "type": "boolean",
                   "description": "Use compact output format.",
                   "default": false
+                },
+                "cutoff_distance_for_pairs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "With ignore_order, two changed items are paired and compared in depth only if their deep distance is below this value; otherwise they are reported as one item removed plus one added (deepdiff library's own default is 0.3).",
+                  "default": 1.0
+                },
+                "cutoff_intersection_for_pairs": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "With ignore_order, pairing of changed items is attempted only if the intersection distance of the two iterables is below this value; otherwise each changed item is reported in its entirety (deepdiff library's own default is 0.7).",
+                  "default": 1.0
+                },
+                "threshold_to_diff_deeper": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "The fraction of keys two dictionaries must share for them to be compared key by key instead of being reported as one whole new value (deepdiff library's own default is 0.33).",
+                  "default": 0
                 }
               },
               "required": ["name"],
@@ -603,6 +710,21 @@
       "description": "If true, treats the data as Markdown for rendering in reports.",
       "default": false
     },
+    "is_rst": {
+      "type": "boolean",
+      "description": "If true, treats the data as reStructuredText for rendering in reports.",
+      "default": false
+    },
+    "markdown_extras": {
+      "type": "object",
+      "description": "markdown2 library 'extras' used when rendering Markdown data as HTML, as name: options (null if it takes none); see https://github.com/trentm/python-markdown2/wiki/Extras. Applied over the defaults strike, target-blank-links and middle-word-em: false; e.g. middle-word-em: true restores emphasis within words.",
+      "default": { "strike": null, "target-blank-links": null, "middle-word-em": false }
+    },
+    "markdown_padded_tables": {
+      "type": "boolean",
+      "description": "Show the rows of Markdown tables in a monospace font in HTML reports, so that the columns of tables padded with spaces line up. Set automatically by the html2text filter's pad_tables sub-directive.",
+      "default": false
+    },
     "monospace": {
       "type": "boolean",
       "description": "If true, uses monospace font in reports.",
@@ -627,38 +749,15 @@
       "description": "Number of versions to keep/compare."
     },
     "hook_data": {
-      "description": "Any custom data to be passed to a custom job type defined in hooks.py."
+      "description": "Any data (e.g. a mapping of names to values) for the code in hooks.py: a custom job class reads it as self.hook_data, and a custom filter, differ or reporter as self.job.hook_data. Not used by webchanges itself."
     }
   },
   "additionalProperties": false,
-  "if": {
-    "properties": {
-      "kind": { "pattern": "^hooks_.+" }
-    },
-    "required": ["kind"]
-  },
-  "else": {
-    "not": {
-      "required": ["hook_data"]
-    }
-  },
   "definitions": {
     "filterList": {
-      "oneOf": [
-        {
-          "type": "string",
-          "description": "A single filter name (e.g. 'html2text', 'sha1sum')."
-        },
-        {
-          "type": "array",
-          "items": { "$ref": "#/definitions/filterItem" },
-          "description": "List of filters to apply in order."
-        },
-        {
-          "$ref": "#/definitions/filterItemObject",
-          "description": "A single filter as an object."
-        }
-      ]
+      "type": "array",
+      "items": { "$ref": "#/definitions/filterItem" },
+      "description": "List of filters to apply in order."
     },
     "filterItem": {
       "oneOf": [
@@ -675,12 +774,20 @@
             "html2text",
             "ical2text",
             "jsontoyaml",
+            "ocr",
+            "pdf2text",
             "pretty-xml",
+            "pypdf",
+            "remove-duplicate-lines",
             "remove_repeated",
             "reverse",
             "sha1sum",
+            "sha256sum",
             "sort",
-            "strip"
+            "strip",
+            "striplines",
+            "xmltojson",
+            "xmltoyaml"
           ],
           "description": "A filter name with no parameters (uses defaults)."
         },
@@ -716,6 +823,7 @@
         "beautify": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": ["integer", "string"], "description": "Shorthand for the 'indent' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -734,6 +842,21 @@
             }
           ],
           "description": "Beautifies HTML using BeautifulSoup."
+        },
+        "between": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "type": "string",
+              "description": "Regular expression matching the line that opens the block (this line is not kept)."
+            },
+            "end": {
+              "type": "string",
+              "description": "Regular expression matching the line that closes the block (this line is not kept)."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Extracts the block of lines between a starting and an ending regular expression."
         },
         "css": {
           "oneOf": [
@@ -775,31 +898,36 @@
                   "default": false
                 }
               },
-              "required": ["selector"],
+              "anyOf": [{ "required": ["selector"] }, { "required": ["exclude"] }],
               "additionalProperties": false
             }
           ],
           "description": "Selects HTML/XML elements matching a CSS selector."
         },
         "csv2text": {
-          "type": "object",
-          "properties": {
-            "format_message": {
-              "type": "string",
-              "description": "Python format string with replacement fields for each column."
-            },
-            "has_header": {
-              "type": "boolean",
-              "description": "Whether the CSV has a header row (auto-detected if not specified)."
-            },
-            "ignore_header": {
-              "type": "boolean",
-              "description": "If true, skip the header row in output.",
-              "default": false
+          "oneOf": [
+            { "type": "string", "description": "Shorthand for the 'format_message' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "format_message": {
+                  "type": "string",
+                  "description": "Python format string with replacement fields for each column."
+                },
+                "has_header": {
+                  "type": "boolean",
+                  "description": "Whether the CSV has a header row (auto-detected if not specified)."
+                },
+                "ignore_header": {
+                  "type": "boolean",
+                  "description": "If true, skip the header row in output.",
+                  "default": false
+                }
+              },
+              "required": ["format_message"],
+              "additionalProperties": false
             }
-          },
-          "required": ["format_message"],
-          "additionalProperties": false,
+          ],
           "description": "Converts CSV data to text using a format string."
         },
         "delete_lines_containing": {
@@ -823,20 +951,72 @@
           "description": "Removes lines containing the specified text or matching a regex pattern."
         },
         "element-by-class": {
-          "type": "string",
-          "description": "Selects HTML elements matching the specified class name."
+          "oneOf": [
+            { "type": "string", "description": "Shorthand for the 'class' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "class": {
+                  "type": "string",
+                  "description": "The class to match."
+                }
+              },
+              "required": ["class"],
+              "additionalProperties": false
+            }
+          ],
+          "description": "Selects all the HTML elements whose class is the one specified."
         },
         "element-by-id": {
-          "type": "string",
-          "description": "Selects the HTML element with the specified id."
+          "oneOf": [
+            { "type": "string", "description": "Shorthand for the 'id' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The id to match."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          ],
+          "description": "Selects all the HTML elements whose id is the one specified."
         },
         "element-by-style": {
-          "type": "string",
-          "description": "Selects HTML elements matching the specified style attribute value."
+          "oneOf": [
+            { "type": "string", "description": "Shorthand for the 'style' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "style": {
+                  "type": "string",
+                  "description": "The style attribute value to match."
+                }
+              },
+              "required": ["style"],
+              "additionalProperties": false
+            }
+          ],
+          "description": "Selects all the HTML elements whose style attribute value is the one specified."
         },
         "element-by-tag": {
-          "type": "string",
-          "description": "Selects HTML elements matching the specified tag name."
+          "oneOf": [
+            { "type": "string", "description": "Shorthand for the 'tag' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "tag": {
+                  "type": "string",
+                  "description": "The tag name to match."
+                }
+              },
+              "required": ["tag"],
+              "additionalProperties": false
+            }
+          ],
+          "description": "Selects all the HTML elements whose tag name is the one specified."
         },
         "execute": {
           "oneOf": [
@@ -863,6 +1043,7 @@
         "format-json": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": ["integer", "string"], "description": "Shorthand for the 'indentation' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -874,6 +1055,11 @@
                 "sort_keys": {
                   "type": "boolean",
                   "description": "Sort object keys alphabetically.",
+                  "default": false
+                },
+                "compact": {
+                  "type": "boolean",
+                  "description": "Remove all unnecessary whitespace (overrides indentation).",
                   "default": false
                 }
               },
@@ -889,44 +1075,38 @@
         },
         "grep": {
           "oneOf": [
-            { "type": "string", "description": "Literal text to match." },
+            { "type": "string", "description": "Shorthand for the 're' sub-directive." },
             {
               "type": "object",
               "properties": {
-                "text": {
-                  "type": "string",
-                  "description": "Literal text to match."
-                },
                 "re": {
                   "type": "string",
                   "description": "Regular expression pattern to match."
                 }
               },
+              "required": ["re"],
               "additionalProperties": false
             }
           ],
-          "description": "Deprecated: use keep_lines_containing instead.",
+          "description": "Deprecated: use keep_lines_containing with the 're' sub-directive instead.",
           "deprecated": true
         },
         "grepi": {
           "oneOf": [
-            { "type": "string", "description": "Literal text to match." },
+            { "type": "string", "description": "Shorthand for the 're' sub-directive." },
             {
               "type": "object",
               "properties": {
-                "text": {
-                  "type": "string",
-                  "description": "Literal text to match."
-                },
                 "re": {
                   "type": "string",
                   "description": "Regular expression pattern to match."
                 }
               },
+              "required": ["re"],
               "additionalProperties": false
             }
           ],
-          "description": "Deprecated: use delete_lines_containing instead.",
+          "description": "Deprecated: use delete_lines_containing with the 're' sub-directive instead.",
           "deprecated": true
         },
         "hexdump": {
@@ -937,6 +1117,7 @@
         "html2text": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": "string", "description": "Shorthand for the 'method' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -1027,18 +1208,37 @@
           ],
           "description": "Converts HTML to plain text."
         },
+        "striplines": {
+          "type": ["boolean", "null"],
+          "description": "Deprecated: use strip with 'splitlines: true' instead.",
+          "deprecated": true
+        },
         "ical2text": {
           "type": ["boolean", "null"],
           "description": "Converts iCalendar data to text.",
           "default": true
         },
         "jq": {
-          "type": "string",
+          "oneOf": [
+            { "type": "string", "description": "Shorthand for the 'query' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "jq filter expression."
+                }
+              },
+              "required": ["query"],
+              "additionalProperties": false
+            }
+          ],
           "description": "Applies a jq filter expression to JSON data."
         },
         "jsontoyaml": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": ["integer", "string"], "description": "Shorthand for the 'indentation' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -1098,6 +1298,7 @@
         "pdf2text": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": "string", "description": "Shorthand for the 'password' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -1122,13 +1323,27 @@
           "description": "Extracts text from PDF using pdftotext."
         },
         "pretty-xml": {
-          "type": ["boolean", "null"],
-          "description": "Pretty-prints XML using Python xml.dom.minidom.",
-          "default": true
+          "oneOf": [
+            { "type": ["boolean", "null"] },
+            { "type": "integer", "description": "Shorthand for the 'indentation' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "indentation": {
+                  "type": "integer",
+                  "description": "Number of spaces for indentation.",
+                  "default": 2
+                }
+              },
+              "additionalProperties": false
+            }
+          ],
+          "description": "Pretty-prints XML using Python xml.dom.minidom."
         },
         "pypdf": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": "string", "description": "Shorthand for the 'password' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -1191,9 +1406,28 @@
           ],
           "description": "Replaces text matching a regex pattern."
         },
+        "remove-duplicate-lines": {
+          "oneOf": [
+            { "type": ["boolean", "null"] },
+            { "type": "string", "description": "Shorthand for the 'separator' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "separator": {
+                  "type": "string",
+                  "description": "Item separator (default: newline)."
+                }
+              },
+              "additionalProperties": false
+            }
+          ],
+          "description": "Deprecated: use remove_repeated with 'adjacent: false' instead.",
+          "deprecated": true
+        },
         "remove_repeated": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": "string", "description": "Shorthand for the 'separator' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -1221,6 +1455,7 @@
         "reverse": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": "string", "description": "Shorthand for the 'separator' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -1238,6 +1473,11 @@
         "sha1sum": {
           "type": ["boolean", "null"],
           "description": "Computes the SHA-1 hash of the content.",
+          "default": true
+        },
+        "sha256sum": {
+          "type": ["boolean", "null"],
+          "description": "Computes the SHA-256 hash of the content.",
           "default": true
         },
         "shellpipe": {
@@ -1265,6 +1505,7 @@
         "sort": {
           "oneOf": [
             { "type": ["boolean", "null"] },
+            { "type": "string", "description": "Shorthand for the 'separator' sub-directive." },
             {
               "type": "object",
               "properties": {
@@ -1311,6 +1552,52 @@
           ],
           "description": "Strips leading/trailing whitespace or specified characters."
         },
+        "xmltojson": {
+          "oneOf": [
+            { "type": ["boolean", "null"] },
+            { "type": "integer", "description": "Shorthand for the 'indentation' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "indentation": {
+                  "type": "integer",
+                  "description": "Number of spaces for indentation.",
+                  "default": 4
+                },
+                "sort_keys": {
+                  "type": "boolean",
+                  "description": "Sort object keys alphabetically.",
+                  "default": false
+                },
+                "compact": {
+                  "type": "boolean",
+                  "description": "Remove all unnecessary whitespace (overrides indentation).",
+                  "default": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ],
+          "description": "Converts XML to JSON (attributes become '@' keys and text '#text'). Requires the xmltodict package."
+        },
+        "xmltoyaml": {
+          "oneOf": [
+            { "type": ["boolean", "null"] },
+            { "type": "integer", "description": "Shorthand for the 'indentation' sub-directive." },
+            {
+              "type": "object",
+              "properties": {
+                "indentation": {
+                  "type": "integer",
+                  "description": "Number of spaces for indentation.",
+                  "default": 2
+                }
+              },
+              "additionalProperties": false
+            }
+          ],
+          "description": "Converts XML to YAML (attributes become '@' keys and text '#text'). Requires the xmltodict package."
+        },
         "xpath": {
           "oneOf": [
             { "type": "string", "description": "XPath 1.0 expression." },
@@ -1351,7 +1638,7 @@
                   "default": false
                 }
               },
-              "required": ["path"],
+              "anyOf": [{ "required": ["path"] }, { "required": ["exclude"] }],
               "additionalProperties": false
             }
           ],
