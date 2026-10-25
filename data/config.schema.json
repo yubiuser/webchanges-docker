@@ -1,9 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/mborsetti/webchanges/refs/heads/main/webchanges/_resources/config.schema.json",
   "title": "Webchanges Configuration File",
   "description": "JSON Schema for the webchanges config.yaml configuration file.",
   "type": "object",
-  "required": ["display", "report", "job_defaults", "differ_defaults", "database", "footnote"],
+  "required": ["display", "report", "job_defaults", "differ_defaults", "database", "footnote", "version_check"],
   "properties": {
     "display": {
       "$ref": "#/$defs/_ConfigDisplay",
@@ -15,7 +16,7 @@
     },
     "job_defaults": {
       "$ref": "#/$defs/_ConfigJobDefaults",
-      "description": "Default directives applied to jobs by kind (all, url, browser, command)."
+      "description": "Default directives applied to jobs by kind (all_jobs, url_jobs, browser_jobs, command_jobs)."
     },
     "differ_defaults": {
       "$ref": "#/$defs/_ConfigDifferDefaults",
@@ -29,6 +30,20 @@
       "type": ["string", "null"],
       "description": "Optional text appended to the footer of every report (text, html and markdown). Set to null to disable.",
       "default": null
+    },
+    "version_check": {
+      "$ref": "#/$defs/_ConfigVersionCheck",
+      "description": "Settings for the once-a-day check against PyPi for a newer release of webchanges."
+    },
+    "jobs": {
+      "anyOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}, "minItems": 1}, {"type": "null"}],
+      "description": "The jobs file(s) to use instead of the default jobs.yaml: a file, a glob pattern (e.g. 'jobs/**/*.yaml') or a directory (for all its *.yaml files, recursively), or a list of these. Relative paths are taken from the directory of this configuration file. Overridden by the --jobs command line argument. Set to null for the default.",
+      "default": null
+    },
+    "hooks": {
+      "anyOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}, "minItems": 1}, {"type": "null"}],
+      "description": "The hooks file(s) to use instead of the default hooks.py: a file, a glob pattern or a directory (for all its *.py files, recursively), or a list of these. Relative paths are taken from the directory of this configuration file. Overridden by the --hooks command line argument. Set to null for the default.",
+      "default": null
     }
   },
   "additionalProperties": false,
@@ -37,7 +52,7 @@
       "title": "Display",
       "description": "Which job outcomes appear in reports. Changes are always reported.",
       "type": "object",
-      "required": ["new", "error", "unchanged", "empty-diff"],
+      "required": ["new", "error", "unchanged"],
       "properties": {
         "new": {
           "type": "boolean",
@@ -55,9 +70,8 @@
           "default": false
         },
         "empty-diff": {
-          "type": "boolean",
-          "description": "Deprecated. Whether to report a 'changed' job whose diff was reduced to an empty string by a diff_filter. Use the additions_only job directive instead.",
-          "default": false,
+          "enum": [false],
+          "description": "Deprecated; use additions_only in the job instead.",
           "deprecated": true
         }
       }
@@ -156,8 +170,11 @@
       "title": "stdout reporter",
       "description": "Display a text report on standard output (the console).",
       "type": "object",
-      "required": ["enabled", "color"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the stdout reporter.",
@@ -174,8 +191,11 @@
       "title": "Browser reporter",
       "description": "Open the HTML report in the system's default web browser.",
       "type": "object",
-      "required": ["enabled"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the browser reporter.",
@@ -187,8 +207,11 @@
       "title": "Discord reporter",
       "description": "Send the report as a message in a Discord channel via a webhook.",
       "type": "object",
-      "required": ["enabled", "webhook_url", "embed", "subject", "colored", "max_message_length"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Discord reporter.",
@@ -286,8 +309,11 @@
       "title": "Email reporter",
       "description": "Send the report via email, using either SMTP or the external sendmail program.",
       "type": "object",
-      "required": ["enabled", "html", "to", "from", "subject", "method", "smtp", "sendmail"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the email reporter.",
@@ -326,20 +352,11 @@
       "title": "GitHub Issue reporter",
       "description": "Submit the Markdown report as a new issue on a GitHub repository. Requires a personal access token with 'public_repo' (public) or 'repo' (private) scope.",
       "type": "object",
-      "required": [
-        "enabled",
-        "token",
-        "owner",
-        "repo",
-        "title",
-        "labels",
-        "format_dt",
-        "format_content",
-        "assignees",
-        "type",
-        "milestone"
-      ],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the GitHub Issue reporter.",
@@ -403,8 +420,11 @@
       "title": "Gotify reporter",
       "description": "Send the Markdown report to a Gotify server. Requires an application token created on the Gotify server's Web-UI.",
       "type": "object",
-      "required": ["enabled", "priority", "server_url", "title", "token"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Gotify reporter.",
@@ -420,10 +440,15 @@
           "description": "Base URL of the Gotify server.",
           "default": ""
         },
+        "subject": {
+          "type": "string",
+          "description": "Message title; can contain the placeholders {count}, {jobs} and {jobs_files}. Empty for no title.",
+          "default": ""
+        },
         "title": {
           "type": "string",
-          "description": "Message title.",
-          "default": ""
+          "deprecated": true,
+          "description": "DEPRECATED: Replace key with 'subject'."
         },
         "token": {
           "type": "string",
@@ -436,8 +461,11 @@
       "title": "IFTTT reporter",
       "description": "Send the text report as an IFTTT event via the Maker Webhooks service.",
       "type": "object",
-      "required": ["enabled", "key", "event"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the IFTTT reporter.",
@@ -459,8 +487,11 @@
       "title": "Mailgun reporter",
       "description": "Send the text report via email using the Mailgun service.",
       "type": "object",
-      "required": ["enabled", "region", "api_key", "domain", "from_mail", "from_name", "to", "subject"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Mailgun reporter.",
@@ -507,8 +538,11 @@
       "title": "Matrix reporter",
       "description": "Send the report to a room using the Matrix protocol.",
       "type": "object",
-      "required": ["enabled", "homeserver", "access_token", "room_id"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Matrix reporter.",
@@ -563,8 +597,11 @@
       "title": "ntfy reporter",
       "description": "Send the text report to an ntfy server (https://ntfy.sh).",
       "type": "object",
-      "required": ["enabled", "topic_url", "authorization", "priorities"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the ntfy reporter.",
@@ -587,8 +624,11 @@
       "title": "Prowl reporter",
       "description": "Send the text report via Prowl (iOS push notifications).",
       "type": "object",
-      "required": ["enabled", "api_key", "priority", "application", "subject"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Prowl reporter.",
@@ -620,8 +660,11 @@
       "title": "Pushbullet reporter",
       "description": "Send the text report via Pushbullet. Note: the underlying 'pushbullet' Python package has not been maintained since 2022.",
       "type": "object",
-      "required": ["enabled", "api_key"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Pushbullet reporter.",
@@ -638,8 +681,11 @@
       "title": "Pushover reporter",
       "description": "Send the text report via Pushover (https://pushover.net).",
       "type": "object",
-      "required": ["enabled", "app", "device", "sound", "user", "priority"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Pushover reporter.",
@@ -677,8 +723,11 @@
       "title": "run_command reporter",
       "description": "Run a local command receiving the text report. Substitutes {count}, {jobs}, and {text} in the command string and exposes the WEBCHANGES_REPORT_CONFIG_JSON and WEBCHANGES_CHANGED_JOBS_JSON environment variables.",
       "type": "object",
-      "required": ["enabled", "command"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the run_command reporter.",
@@ -695,8 +744,11 @@
       "title": "Telegram reporter",
       "description": "Send the Markdown report via Telegram using the Bot API.",
       "type": "object",
-      "required": ["enabled", "bot_token", "chat_id", "silent"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the Telegram reporter.",
@@ -732,8 +784,11 @@
       "title": "Webhook reporter",
       "description": "Send the report to a webhook endpoint (e.g. Slack, Mattermost).",
       "type": "object",
-      "required": ["enabled", "markdown", "webhook_url", "rich_text", "max_message_length"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the webhook reporter.",
@@ -765,8 +820,11 @@
       "title": "XMPP reporter",
       "description": "Send the text report via the XMPP protocol. Use a dedicated XMPP account, never a primary one.",
       "type": "object",
-      "required": ["enabled", "sender", "recipient", "insecure_password"],
       "properties": {
+        "tags": {
+          "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
+          "description": "Restrict this reporter to the jobs having any of these tags in their 'tags' directive. If omitted, the reporter reports on every job."
+        },
         "enabled": {
           "type": "boolean",
           "description": "Enable the XMPP reporter.",
@@ -825,49 +883,159 @@
         "text": { "$ref": "#/$defs/_ConfigReportText" },
         "html": { "$ref": "#/$defs/_ConfigReportHtml" },
         "markdown": { "$ref": "#/$defs/_ConfigReportMarkdown" },
-        "stdout": { "$ref": "#/$defs/_ConfigReportStdout" },
-        "browser": { "$ref": "#/$defs/_ConfigReportBrowser" },
-        "discord": { "$ref": "#/$defs/_ConfigReportDiscord" },
-        "email": { "$ref": "#/$defs/_ConfigReportEmail" },
-        "github_issue": { "$ref": "#/$defs/_ConfigReportGithubIssue" },
-        "gotify": { "$ref": "#/$defs/_ConfigReportGotify" },
-        "ifttt": { "$ref": "#/$defs/_ConfigReportIfttt" },
-        "mailgun": { "$ref": "#/$defs/_ConfigReportMailgun" },
-        "matrix": { "$ref": "#/$defs/_ConfigReportMatrix" },
-        "ntfy": { "$ref": "#/$defs/_ConfigReportNtfy" },
-        "prowl": { "$ref": "#/$defs/_ConfigReportProwl" },
-        "pushbullet": { "$ref": "#/$defs/_ConfigReportPushbullet" },
-        "pushover": { "$ref": "#/$defs/_ConfigReportPushover" },
-        "run_command": { "$ref": "#/$defs/_ConfigReportRunCommand" },
-        "telegram": { "$ref": "#/$defs/_ConfigReportTelegram" },
-        "webhook": { "$ref": "#/$defs/_ConfigReportWebhook" },
-        "xmpp": { "$ref": "#/$defs/_ConfigReportXmpp" }
+        "stdout": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportStdout" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportStdout" }, "minItems": 1 }
+          ]
+        },
+        "browser": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportBrowser" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportBrowser" }, "minItems": 1 }
+          ]
+        },
+        "discord": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportDiscord" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportDiscord" }, "minItems": 1 }
+          ]
+        },
+        "email": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportEmail" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportEmail" }, "minItems": 1 }
+          ]
+        },
+        "github_issue": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportGithubIssue" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportGithubIssue" }, "minItems": 1 }
+          ]
+        },
+        "gotify": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportGotify" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportGotify" }, "minItems": 1 }
+          ]
+        },
+        "ifttt": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportIfttt" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportIfttt" }, "minItems": 1 }
+          ]
+        },
+        "mailgun": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportMailgun" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportMailgun" }, "minItems": 1 }
+          ]
+        },
+        "matrix": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportMatrix" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportMatrix" }, "minItems": 1 }
+          ]
+        },
+        "ntfy": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportNtfy" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportNtfy" }, "minItems": 1 }
+          ]
+        },
+        "prowl": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportProwl" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportProwl" }, "minItems": 1 }
+          ]
+        },
+        "pushbullet": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportPushbullet" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportPushbullet" }, "minItems": 1 }
+          ]
+        },
+        "pushover": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportPushover" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportPushover" }, "minItems": 1 }
+          ]
+        },
+        "run_command": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportRunCommand" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportRunCommand" }, "minItems": 1 }
+          ]
+        },
+        "telegram": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportTelegram" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportTelegram" }, "minItems": 1 }
+          ]
+        },
+        "webhook": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportWebhook" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportWebhook" }, "minItems": 1 }
+          ]
+        },
+        "xmpp": {
+          "anyOf": [
+            { "$ref": "#/$defs/_ConfigReportXmpp" },
+            { "type": "array", "items": { "$ref": "#/$defs/_ConfigReportXmpp" }, "minItems": 1 }
+          ]
+        }
       }
     },
     "_ConfigJobDefaults": {
       "title": "Job defaults",
-      "description": "Default directives applied to jobs by kind. All keys are optional; any directive set under 'url', 'browser', or 'command' overrides the same directive set under 'all' (the 'headers' directive merges header-by-header).",
+      "description": "Default directives applied to jobs by kind. All keys are optional; any directive set under 'url_jobs', 'browser_jobs', or 'command_jobs' overrides the same directive set under 'all_jobs' (the 'headers' directive merges header-by-header).",
       "type": "object",
       "properties": {
         "_note": {
           "type": "string",
           "description": "Free-form note (ignored by webchanges; keys starting with '_' are not interpreted)."
         },
-        "all": {
+        "all_jobs": {
           "type": "object",
           "description": "Directives applied to every job, including those defined in hooks.py."
         },
-        "url": {
+        "url_jobs": {
           "type": "object",
           "description": "Directives applied to 'url' jobs without 'use_browser'."
         },
-        "browser": {
+        "browser_jobs": {
           "type": "object",
           "description": "Directives applied to 'url' jobs with 'use_browser: true'."
         },
-        "command": {
+        "command_jobs": {
           "type": "object",
           "description": "Directives applied to 'command' jobs."
+        },
+        "all": {
+          "type": "object",
+          "description": "Deprecated; renamed 'all_jobs'.",
+          "deprecated": true
+        },
+        "url": {
+          "type": "object",
+          "description": "Deprecated; renamed 'url_jobs'.",
+          "deprecated": true
+        },
+        "browser": {
+          "type": "object",
+          "description": "Deprecated; renamed 'browser_jobs'.",
+          "deprecated": true
+        },
+        "command": {
+          "type": "object",
+          "description": "Deprecated; renamed 'command_jobs'.",
+          "deprecated": true
+        },
+        "shell": {
+          "type": "object",
+          "description": "Deprecated; renamed 'command_jobs'.",
+          "deprecated": true
         }
       }
     },
@@ -926,6 +1094,19 @@
           "type": "integer",
           "description": "Maximum number of snapshots to retain (sqlite3 engine only). 0 means retain all snapshots indefinitely. Other engines retain either all snapshots (redis, minidb) or only the latest one (textfiles). Can be overridden with the --max-snapshots command-line argument.",
           "default": 4
+        }
+      }
+    },
+    "_ConfigVersionCheck": {
+      "title": "Version Check",
+      "description": "Settings for the once-a-day check against PyPi for a newer release of webchanges.",
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether to query PyPi for a newer release. The result is cached on disk for 24 hours, so this hits the network at most once per day. Set to false to disable the check entirely (no network call, no upgrade nudge in reports).",
+          "default": true
         }
       }
     }
