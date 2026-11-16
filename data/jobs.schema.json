@@ -137,9 +137,9 @@
     },
     "http_client": {
       "type": "string",
-      "enum": ["httpx", "requests", "curl_cffi"],
-      "description": "HTTP library to use.",
-      "default": "httpx"
+      "enum": ["httpx2", "requests", "curl_cffi", "httpx"],
+      "description": "HTTP library to use. httpx2 (the default) falls back to httpx if httpx2 is not installed; httpx is an alias of httpx2.",
+      "default": "httpx2"
     },
     "impersonate": {
       "type": "string",
@@ -149,7 +149,7 @@
     "http_version": {
       "type": "string",
       "enum": ["v1", "v2", "v2tls", "v2_prior_knowledge", "v3", "v3only"],
-      "description": "HTTP protocol version: v1 (HTTP/1.1), v2 (HTTP/2; with httpx requires the h2 package), and, with http_client: curl_cffi only, v2tls, v2_prior_knowledge, v3 (HTTP/3 with fallback) and v3only. Not supported by http_client: requests."
+      "description": "HTTP protocol version: v1 (HTTP/1.1), v2 (HTTP/2; with httpx2 requires the h2 package), and, with http_client: curl_cffi only, v2tls, v2_prior_knowledge, v3 (HTTP/3 with fallback) and v3only. Not supported by http_client: requests."
     },
     "fingerprints": {
       "type": "object",
@@ -166,7 +166,7 @@
     },
     "ignore_dh_key_too_small": {
       "type": "boolean",
-      "description": "If true, accepts a server's weak (1024-bit) Diffie-Hellman key by lowering the OpenSSL security level (certificates are still verified). Supported by http_client httpx and requests, not by curl_cffi.",
+      "description": "If true, accepts a server's weak (1024-bit) Diffie-Hellman key by lowering the OpenSSL security level (certificates are still verified). Supported by http_client httpx2 and requests, not by curl_cffi.",
       "default": false
     },
     "ignore_incomplete_reads": {
@@ -338,7 +338,14 @@
     },
     "wait_until": {
       "type": "string",
-      "enum": ["load", "domcontentloaded", "networkidle", "commit"],
+      "anyOf": [
+        { "enum": ["load", "domcontentloaded", "networkidle", "commit"] },
+        {
+          "enum": ["networkidle0", "networkidle2"],
+          "deprecated": true,
+          "deprecationMessage": "Use 'networkidle' instead of 'networkidle0' or 'networkidle2'."
+        }
+      ],
       "description": "Navigation completion event to wait for (browser jobs).",
       "default": "load"
     },
@@ -417,23 +424,6 @@
           "oneOf": [
             {
               "properties": {
-                "name": { "type": "string", "const": "unified" },
-                "context_lines": {
-                  "type": "integer",
-                  "description": "Number of context lines around changes.",
-                  "default": 3
-                },
-                "range_info": {
-                  "type": "boolean",
-                  "description": "Include range information (@@ lines).",
-                  "default": true
-                }
-              },
-              "required": ["name"],
-              "additionalProperties": false
-            },
-            {
-              "properties": {
                 "name": { "type": "string", "const": "ai_google" },
                 "model": {
                   "type": "string",
@@ -489,6 +479,18 @@
                   "type": "array",
                   "description": "Tools available to the model."
                 },
+                "diff": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": ["unified", "deepdiff", "table", "wdiff"],
+                      "description": "Differ name with default parameters."
+                    },
+                    { "$ref": "#/definitions/textDiffer" }
+                  ],
+                  "description": "The differ generating the diff that follows the summary: a differ name, or an object with its 'name' and sub-directives (any differ except 'ai_google' and 'image').",
+                  "default": "unified"
+                },
                 "unified": {
                   "type": "object",
                   "properties": {
@@ -496,80 +498,9 @@
                     "range_info": { "type": "boolean", "default": true }
                   },
                   "additionalProperties": false,
-                  "description": "Nested unified differ settings for prompt generation."
-                }
-              },
-              "required": ["name"],
-              "additionalProperties": false
-            },
-            {
-              "properties": {
-                "name": { "type": "string", "const": "command" },
-                "command": {
-                  "type": "string",
-                  "description": "Command to execute for diffing."
-                },
-                "is_html": {
-                  "type": "boolean",
-                  "description": "If true, the command output is HTML.",
-                  "default": false
-                },
-                "context_lines": {
-                  "type": "integer",
-                  "description": "Number of context lines around changes.",
-                  "default": 3
-                }
-              },
-              "required": ["name", "command"],
-              "additionalProperties": false
-            },
-            {
-              "properties": {
-                "name": { "type": "string", "const": "deepdiff" },
-                "data_type": {
-                  "type": "string",
-                  "enum": ["json", "yaml", "xml"],
-                  "description": "Data type to parse (derived from media type if not set)."
-                },
-                "ignore_order": {
-                  "type": "boolean",
-                  "description": "Ignore order of elements.",
-                  "default": false
-                },
-                "ignore_string_case": {
-                  "type": "boolean",
-                  "description": "Ignore string case differences.",
-                  "default": false
-                },
-                "significant_digits": {
-                  "type": "integer",
-                  "description": "Number of significant digits for numeric comparison."
-                },
-                "compact": {
-                  "type": "boolean",
-                  "description": "Use compact output format.",
-                  "default": false
-                },
-                "cutoff_distance_for_pairs": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 1,
-                  "description": "With ignore_order, two changed items are paired and compared in depth only if their deep distance is below this value; otherwise they are reported as one item removed plus one added (deepdiff library's own default is 0.3).",
-                  "default": 1.0
-                },
-                "cutoff_intersection_for_pairs": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 1,
-                  "description": "With ignore_order, pairing of changed items is attempted only if the intersection distance of the two iterables is below this value; otherwise each changed item is reported in its entirety (deepdiff library's own default is 0.7).",
-                  "default": 1.0
-                },
-                "threshold_to_diff_deeper": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 1,
-                  "description": "The fraction of keys two dictionaries must share for them to be compared key by key instead of being reported as one whole new value (deepdiff library's own default is 0.33).",
-                  "default": 0
+                  "description": "Deprecated: use 'diff' (e.g. 'diff: {name: unified, context_lines: 5}').",
+                  "deprecated": true,
+                  "deprecationMessage": "Use 'diff: {name: unified, ...}' instead of 'unified: {...}'."
                 }
               },
               "required": ["name"],
@@ -649,15 +580,6 @@
                         "tools": {
                           "type": "array",
                           "description": "Tools available to the model."
-                        },
-                        "unified": {
-                          "type": "object",
-                          "properties": {
-                            "context_lines": { "type": "integer", "default": 3 },
-                            "range_info": { "type": "boolean", "default": true }
-                          },
-                          "additionalProperties": false,
-                          "description": "Nested unified differ settings for prompt generation."
                         }
                       },
                       "additionalProperties": false
@@ -669,35 +591,7 @@
               "required": ["name"],
               "additionalProperties": false
             },
-            {
-              "properties": {
-                "name": { "type": "string", "const": "table" },
-                "tabsize": {
-                  "type": "integer",
-                  "description": "Tab stop size.",
-                  "default": 8
-                }
-              },
-              "required": ["name"],
-              "additionalProperties": false
-            },
-            {
-              "properties": {
-                "name": { "type": "string", "const": "wdiff" },
-                "context_lines": {
-                  "type": "integer",
-                  "description": "Number of context lines around changes.",
-                  "default": 3
-                },
-                "range_info": {
-                  "type": "boolean",
-                  "description": "Include range information.",
-                  "default": true
-                }
-              },
-              "required": ["name"],
-              "additionalProperties": false
-            }
+            { "$ref": "#/definitions/textDiffer" }
           ]
         }
       ],
@@ -741,8 +635,13 @@
     },
     "markdown_padded_tables": {
       "type": "boolean",
-      "description": "Show the rows of Markdown tables in a monospace font in HTML reports, so that the columns of tables padded with spaces line up. Set automatically by the html2text filter's pad_tables sub-directive.",
+      "description": "With markdown_tables: false, show the rows of Markdown tables in a monospace font in HTML reports, so that the columns of tables padded with spaces line up. Set automatically by the html2text filter's pad_tables sub-directive.",
       "default": false
+    },
+    "markdown_tables": {
+      "type": "boolean",
+      "description": "Render the rows of Markdown tables as HTML tables when Markdown data is rendered as HTML for the html and email reports (including in the unified and wdiff diffs). False shows each row as a line of text, as in earlier versions.",
+      "default": true
     },
     "monospace": {
       "type": "boolean",
@@ -778,6 +677,151 @@
   },
   "additionalProperties": false,
   "definitions": {
+    "textDiffer": {
+      "type": "object",
+      "description": "A differ, other than 'ai_google' or 'image', with its sub-directives.",
+      "oneOf": [
+        {
+          "properties": {
+            "name": { "type": "string", "const": "unified" },
+            "context_lines": {
+              "type": "integer",
+              "description": "Number of context lines around changes.",
+              "default": 3
+            },
+            "range_info": {
+              "type": "boolean",
+              "description": "Include range information (@@ lines).",
+              "default": true
+            },
+            "ignore_whitespace": {
+              "type": "boolean",
+              "description": "Ignore changes of whitespace only (e.g. one space becoming two).",
+              "default": false
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "name": { "type": "string", "const": "command" },
+            "command": {
+              "type": "string",
+              "description": "Command to execute for diffing."
+            },
+            "is_html": {
+              "type": "boolean",
+              "description": "If true, the command output is HTML.",
+              "default": false
+            },
+            "context_lines": {
+              "type": "integer",
+              "description": "Number of context lines around changes.",
+              "default": 3
+            }
+          },
+          "required": ["name", "command"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "Command to execute for diffing (the 'command' differ, whose name may be omitted when this is its only sub-directive)."
+            }
+          },
+          "required": ["command"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "name": { "type": "string", "const": "deepdiff" },
+            "data_type": {
+              "type": "string",
+              "enum": ["json", "yaml", "xml"],
+              "description": "Data type to parse (derived from media type if not set)."
+            },
+            "ignore_order": {
+              "type": "boolean",
+              "description": "Ignore order of elements.",
+              "default": false
+            },
+            "ignore_string_case": {
+              "type": "boolean",
+              "description": "Ignore string case differences.",
+              "default": false
+            },
+            "significant_digits": {
+              "type": "integer",
+              "description": "Number of significant digits for numeric comparison."
+            },
+            "compact": {
+              "type": "boolean",
+              "description": "Use compact output format.",
+              "default": false
+            },
+            "cutoff_distance_for_pairs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "With ignore_order, two changed items are paired and compared in depth only if their deep distance is below this value; otherwise they are reported as one item removed plus one added (deepdiff library's own default is 0.3).",
+              "default": 1.0
+            },
+            "cutoff_intersection_for_pairs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "With ignore_order, pairing of changed items is attempted only if the intersection distance of the two iterables is below this value; otherwise each changed item is reported in its entirety (deepdiff library's own default is 0.7).",
+              "default": 1.0
+            },
+            "threshold_to_diff_deeper": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "The fraction of keys two dictionaries must share for them to be compared key by key instead of being reported as one whole new value (deepdiff library's own default is 0.33).",
+              "default": 0
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "name": { "type": "string", "const": "table" },
+            "tabsize": {
+              "type": "integer",
+              "description": "Tab stop size.",
+              "default": 8
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "name": { "type": "string", "const": "wdiff" },
+            "context_lines": {
+              "type": "integer",
+              "description": "Number of context lines around changes.",
+              "default": 3
+            },
+            "range_info": {
+              "type": "boolean",
+              "description": "Include range information.",
+              "default": true
+            },
+            "color": {
+              "type": "boolean",
+              "description": "Colorize the text report with ANSI escape codes; if false, mark removed words [-like this-] and added ones {+like this+}.",
+              "default": true
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      ]
+    },
     "filterList": {
       "type": "array",
       "items": { "$ref": "#/definitions/filterItem" },
@@ -1151,83 +1195,193 @@
                   "description": "Conversion method to use.",
                   "default": "html2text"
                 },
-                "unicode_snob": {
+                "backquote_code_style": {
                   "type": "boolean",
-                  "description": "Use Unicode characters instead of ASCII.",
-                  "default": true
+                  "description": "Convert code blocks to backquoted (```) blocks (html2text method).",
+                  "default": false
                 },
                 "body_width": {
                   "type": "integer",
-                  "description": "Character count to wrap lines at (0 for no wrapping).",
+                  "description": "Character count to wrap lines at, 0 for no wrapping (html2text method).",
                   "default": 0
+                },
+                "bypass_tables": {
+                  "type": "boolean",
+                  "description": "Format tables in HTML rather than Markdown syntax (html2text method).",
+                  "default": false
+                },
+                "close_quote": {
+                  "type": "string",
+                  "description": "Character used to close quotes (<q> tags) (html2text method).",
+                  "default": "\""
+                },
+                "default_image_alt": {
+                  "type": "string",
+                  "description": "Alt text for images that have none (html2text method).",
+                  "default": ""
+                },
+                "emphasis_mark": {
+                  "type": "string",
+                  "description": "Character used for emphasized (italic) text (html2text method).",
+                  "default": "_"
+                },
+                "escape_snob": {
+                  "type": "boolean",
+                  "description": "Escape all special Markdown characters; less readable, but avoids corner-case formatting issues (html2text method).",
+                  "default": false
+                },
+                "google_doc": {
+                  "type": "boolean",
+                  "description": "Convert an HTML-exported Google Document (html2text method).",
+                  "default": false
+                },
+                "google_list_indent": {
+                  "type": "integer",
+                  "description": "Number of pixels Google indents nested lists, with google_doc (html2text method).",
+                  "default": 36
+                },
+                "hide_strikethrough": {
+                  "type": "boolean",
+                  "description": "Hide strike-through text, with google_doc (html2text method).",
+                  "default": false
+                },
+                "ignore_emphasis": {
+                  "type": "boolean",
+                  "description": "Ignore emphasis (bold and italic) tags (html2text method).",
+                  "default": false
                 },
                 "ignore_images": {
                   "type": "boolean",
-                  "description": "Ignore image tags.",
+                  "description": "Ignore image tags (html2text method).",
                   "default": true
+                },
+                "ignore_links": {
+                  "type": "boolean",
+                  "description": "Ignore anchor tags, keeping their text (html2text method).",
+                  "default": false
+                },
+                "ignore_mailto_links": {
+                  "type": "boolean",
+                  "description": "Ignore mailto: links (html2text method).",
+                  "default": false
+                },
+                "ignore_tables": {
+                  "type": "boolean",
+                  "description": "Ignore table tags, keeping their content (html2text method).",
+                  "default": false
+                },
+                "images_as_html": {
+                  "type": "boolean",
+                  "description": "Keep images as raw HTML <img> tags (html2text method).",
+                  "default": false
+                },
+                "images_to_alt": {
+                  "type": "boolean",
+                  "description": "Replace images with their alt text (html2text method).",
+                  "default": false
+                },
+                "images_with_size": {
+                  "type": "boolean",
+                  "description": "Keep images with a width or height as raw HTML <img> tags with their size (html2text method).",
+                  "default": false
+                },
+                "include_sup_sub": {
+                  "type": "boolean",
+                  "description": "Keep <sup> and <sub> tags (html2text method).",
+                  "default": false
+                },
+                "inline_links": {
+                  "type": "boolean",
+                  "description": "Use inline rather than reference links (html2text method).",
+                  "default": true
+                },
+                "links_each_paragraph": {
+                  "type": "boolean",
+                  "description": "Put reference links after each paragraph instead of at the end (html2text method).",
+                  "default": false
+                },
+                "mark_code": {
+                  "type": "boolean",
+                  "description": "Wrap <pre> blocks in [code]...[/code] tags (html2text method).",
+                  "default": false
+                },
+                "open_quote": {
+                  "type": "string",
+                  "description": "Character used to open quotes (<q> tags) (html2text method).",
+                  "default": "\""
+                },
+                "pad_tables": {
+                  "type": "boolean",
+                  "description": "Pad table cells to equal column width (html2text method).",
+                  "default": false
+                },
+                "protect_links": {
+                  "type": "boolean",
+                  "description": "Protect links from line breaks by surrounding them with angle brackets (html2text method).",
+                  "default": false
                 },
                 "single_line_break": {
                   "type": "boolean",
-                  "description": "Use single line breaks instead of double.",
+                  "description": "Use a single line break after a block element rather than two (html2text method).",
+                  "default": true
+                },
+                "skip_internal_links": {
+                  "type": "boolean",
+                  "description": "Skip internal links (href=\"#anchor\") (html2text method).",
+                  "default": true
+                },
+                "strong_mark": {
+                  "type": "string",
+                  "description": "Characters used for strong (bold) text (html2text method).",
+                  "default": "**"
+                },
+                "ul_item_mark": {
+                  "type": "string",
+                  "description": "Character used for unordered list items (html2text method).",
+                  "default": "*"
+                },
+                "unicode_snob": {
+                  "type": "boolean",
+                  "description": "Use Unicode characters instead of their ASCII replacements (html2text method).",
+                  "default": true
+                },
+                "use_automatic_links": {
+                  "type": "boolean",
+                  "description": "Convert absolute links whose text is the URL to the <URL> format (html2text method).",
                   "default": true
                 },
                 "wrap_links": {
                   "type": "boolean",
-                  "description": "Wrap long links.",
+                  "description": "Wrap links when wrapping lines at body_width (html2text method).",
                   "default": false
                 },
-                "pad_tables": {
+                "wrap_list_items": {
                   "type": "boolean",
-                  "description": "Pad table cells for alignment (html2text method)."
+                  "description": "Wrap list items when wrapping lines at body_width (html2text method).",
+                  "default": false
                 },
-                "inline_links": {
+                "wrap_tables": {
                   "type": "boolean",
-                  "description": "Use inline links instead of reference links."
-                },
-                "protect_links": {
-                  "type": "boolean",
-                  "description": "Protect links from line breaks."
-                },
-                "images_to_alt": {
-                  "type": "boolean",
-                  "description": "Replace images with their alt text."
-                },
-                "images_with_size": {
-                  "type": "boolean",
-                  "description": "Include image size in output."
-                },
-                "ignore_links": {
-                  "type": "boolean",
-                  "description": "Ignore anchor tags."
-                },
-                "ignore_emphasis": {
-                  "type": "boolean",
-                  "description": "Ignore emphasis tags."
-                },
-                "ignore_tables": {
-                  "type": "boolean",
-                  "description": "Ignore table structure."
-                },
-                "decode_errors": {
-                  "type": "string",
-                  "description": "How to handle decode errors."
+                  "description": "Wrap tables when wrapping lines at body_width (html2text method).",
+                  "default": false
                 },
                 "parser": {
                   "type": "string",
-                  "description": "HTML parser to use (for bs4 method).",
+                  "description": "HTML parser to use (bs4 method).",
                   "default": "lxml"
                 },
                 "separator": {
                   "type": "string",
-                  "description": "Separator between elements (for bs4 method).",
+                  "description": "Separator between strings (bs4 method).",
                   "default": ""
                 },
                 "strip": {
                   "type": "boolean",
-                  "description": "Strip whitespace from text (for bs4 method).",
+                  "description": "Strip whitespace from strings before concatenating them (bs4 method).",
                   "default": false
                 }
-              }
+              },
+              "additionalProperties": false
             }
           ],
           "description": "Converts HTML to plain text."
