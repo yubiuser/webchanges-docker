@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG webchanges_tag=v3.38.0
+ARG webchanges_tag=v3.40.0
 
 FROM python:3.15.0-alpine3.24 AS builder
 ARG webchanges_tag
@@ -61,7 +61,7 @@ RUN python3 -m PyInstaller -F --strip webchanges.py
 
 
 
-FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS deploy
+FROM alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf AS deploy
 ENV APP_USER=webchanges
 ENV PYTHONUTF8=1
 RUN apk add --no-cache tini
