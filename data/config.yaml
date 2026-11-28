@@ -1,5 +1,5 @@
 # webchanges configuration file. See https://webchanges.readthedocs.io/en/stable/configuration.html
-# Originally written on 2026-11-16T07:53:30+00:00Z by version 3.40.0.
+# Originally written on 2026-11-23T08:28:24+00:00Z by version 3.40.1.
 
 # yaml-language-server: $schema=config.schema.json
 display:
